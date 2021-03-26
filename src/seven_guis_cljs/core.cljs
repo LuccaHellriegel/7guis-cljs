@@ -1,6 +1,7 @@
 (ns seven-guis-cljs.core
   (:require [reagent.core :as r]
-            [reagent.dom :as d]))
+            [reagent.dom :as d]
+            [clojure.string :as string]))
 
 ;; -------------------------
 ;; Views
@@ -239,6 +240,95 @@
 
 ;; -------------------------
 
+(def me {:surname "Nachname" :name "Vorname"})
+
+(def you {:surname "Highly" :name "Specific"})
+
+(def crud-db (r/atom [me you]))
+(def prefix (r/atom ""))
+(def selected-full-name (r/atom me))
+(def name-atom (r/atom ""))
+(def surname-atom (r/atom ""))
+
+(defn prefix-field []
+  [:input {:type "text" :on-change #(reset! prefix (event->target-value %))}])
+
+(defn name-field []
+  [:input {:type "text"
+           :value @name-atom
+           :on-change #(reset! name-atom (event->target-value %))}])
+
+(defn surname-field []
+  [:input {:type "text"
+           :value @surname-atom
+           :on-change #(reset! surname-atom (event->target-value %))}])
+
+(defn fields []
+  [:div {:style {:width "50%"}}
+   "Name: " [name-field]
+   [:br]
+   "Surname: "  [surname-field]])
+
+(defn full-name-list-entry [full-name selected-name]
+  [:li {:on-click #(if (identical? selected-name full-name)
+                     (reset! selected-full-name nil)
+                     (reset! selected-full-name full-name))
+        ; = is not enough if we allow same names (the world is big)
+        :style (if (identical? full-name selected-name)
+                 {:background-color "LightBlue" :color "white" :list-style-type "none"}
+                 {:list-style-type "none"})}
+   (:surname full-name) ", " (:name full-name)])
+
+(defn surname-starts-with-prefix [full-name]
+  (string/starts-with? (:surname full-name) @prefix))
+
+(defn full-name-list []
+  [:ul
+   {:style {:width "50%"}}
+   (doall (map
+           #(full-name-list-entry % @selected-full-name)
+           (filter #(if
+                     (surname-starts-with-prefix %)
+                      true
+                      (do
+                        (when (= @selected-full-name %)
+                          (reset! selected-full-name nil))
+                        false)) @crud-db)))])
+
+(defn add-full-name-to-vec [v]
+  (conj v {:name @name-atom :surname @surname-atom}))
+
+(defn create-button []
+  [:button {:on-click #(swap! crud-db add-full-name-to-vec)} "Create"])
+
+(defn replace-in-db [db selected-name new-name]
+  (vec (replace {selected-name new-name} db)))
+
+; cant find anything about "" / empty updates in the spec, so we will allow it
+(defn update-button []
+  [:button {:on-click #(swap! crud-db replace-in-db @selected-full-name {:name @name-atom :surname @surname-atom})
+            :disabled (not @selected-full-name)} "Update"])
+
+(defn remove-from-db [db selected-name]
+  (vec (remove #(= % selected-name) db)))
+
+(defn delete-button []
+  [:button {:on-click #(swap! crud-db remove-from-db @selected-full-name)
+            :disabled (not @selected-full-name)} "Delete"])
+
+(defn buttons []
+  [:div [create-button] " "
+   [update-button] " "
+   [delete-button]])
+
+(defn crud-gui []
+  [:div
+   "Filter prefix: " [prefix-field] [:br]
+   [full-name-list]
+   [fields]
+   [buttons]])
+
+;; -------------------------
 
 (defn home-page []
   [:div
@@ -255,7 +345,11 @@
    [:br]
    [:br]
    [:u "Timer"]
-   [timer-gui]])
+   [timer-gui]
+   [:br]
+   [:br]
+   [:u "CRUD"]
+   [crud-gui]])
 ;; -------------------------
 ;; Initialize app
 
