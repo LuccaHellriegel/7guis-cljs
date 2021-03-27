@@ -269,7 +269,11 @@
    [:br]
    "Surname: "  [surname-field]])
 
+(defn gen-key []
+  (gensym "key-"))
+
 (defn full-name-list-entry [full-name selected-name]
+  ^{:key (gen-key)}
   [:li {:on-click #(if (identical? selected-name full-name)
                      (reset! selected-full-name nil)
                      (reset! selected-full-name full-name))
@@ -330,6 +334,75 @@
 
 ;; -------------------------
 
+; think about using just one atom, especially when we include selected-circles
+(def present (r/atom []))
+
+(def future (r/atom []))
+
+(defn undo []
+  (when (> (count @present) 0)
+    (swap! future #(conj % (last @present)))
+    (swap! present #(pop %))))
+
+(defn undo-button []
+  [:button {:on-click undo} "Undo"])
+
+(defn redo []
+  (when (> (count @future) 0)
+    (swap! present #(conj % (last @future)))
+    (swap! future #(pop %))))
+
+(defn redo-button []
+  [:button {:on-click redo} "Redo"])
+
+(defn draw-standard-circle [ctx pos]
+  (.beginPath ctx)
+  (.arc ctx (:x pos) (:y pos) 15 0 (* 2 js/Math.PI) false)
+  (set! (.-lineWidth ctx) 1)
+  (.stroke ctx)
+  (reset! future []))
+
+(def canvas-id "circle-canvas")
+
+(defn get-canvas []
+  (.getElementById js/document canvas-id))
+
+(defn get-canvas-ctx []
+  (.getContext (get-canvas) "2d"))
+
+(defn event->canvas-mouse-pos [e]
+  (let [rect (.getBoundingClientRect (get-canvas))]
+    {:x (- (.-clientX e) (.-left rect))
+     :y (- (.-clientY e) (.-top rect))}))
+
+(defn conj-mouse-pos [v e]
+  (conj v (event->canvas-mouse-pos e)))
+
+(defn circle-canvas []
+  [:canvas {:id canvas-id :width "300" :height "200" :style {:border "3px solid"}
+            :on-click
+            #(swap! present conj-mouse-pos %)}])
+
+(defn reset-canvas  [canvas]
+  (.clearRect (.getContext canvas "2d") 0 0 (.-width canvas) (.-height canvas)))
+
+(defn circle-drawer [positions]
+  (r/after-render
+   #(do (reset-canvas (get-canvas))
+        (let [ctx (get-canvas-ctx)]
+          (doseq [pos positions] (prn (draw-standard-circle ctx pos))))))
+  nil)
+
+(defn circle-drawer-gui []
+  [:div
+   [undo-button] " "
+   [redo-button]
+   [:br]
+   [circle-canvas]
+   [circle-drawer @present]])
+
+;; -------------------------
+
 (defn home-page []
   [:div
    [:u "Counter"]
@@ -349,7 +422,11 @@
    [:br]
    [:br]
    [:u "CRUD"]
-   [crud-gui]])
+   [crud-gui]
+   [:br]
+   [:br]
+   [:u "Circle Drawer"]
+   [circle-drawer-gui]])
 ;; -------------------------
 ;; Initialize app
 
