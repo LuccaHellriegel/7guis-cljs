@@ -359,8 +359,7 @@
   (.beginPath ctx)
   (.arc ctx (:x pos) (:y pos) 15 0 (* 2 js/Math.PI) false)
   (set! (.-lineWidth ctx) 1)
-  (.stroke ctx)
-  (reset! future []))
+  (.stroke ctx))
 
 (def canvas-id "circle-canvas")
 
@@ -381,7 +380,10 @@
 (defn circle-canvas []
   [:canvas {:id canvas-id :width "300" :height "200" :style {:border "3px solid"}
             :on-click
-            #(swap! present conj-mouse-pos %)}])
+            #(do
+               ; once we draw a new circle we cant redo
+               (reset! future [])
+               (swap! present conj-mouse-pos %))}])
 
 (defn reset-canvas  [canvas]
   (.clearRect (.getContext canvas "2d") 0 0 (.-width canvas) (.-height canvas)))
