@@ -1,20 +1,15 @@
 (ns seven-guis-cljs.core
   (:require [reagent.core :as r]
             [reagent.dom :as d]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [seven-guis-cljs.task7cells :as cells]))
 
-;; -------------------------
-;; Views
-
-; special reagent atom for re-render
 (def click-count (r/atom 0))
 
 (defn counter-field []
   [:input {:type "text"
-           ; @ for referencing the value
            :value @click-count
-           ; React naming
-           :readOnly true}])
+           :read-only true}])
 
 (defn count-button []
   [:input
@@ -84,8 +79,8 @@
                      change-fahrenheit)}]])
 
 (defn temp-converter-gui []
-  [:span
-   [celsius-field] "Celsius =" [fahrenheit-field] "Fahrenheit"])
+  [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+   [celsius-field] [:div {:style {:margin "0px 5px 0px"}} "Celsius ="] [fahrenheit-field] [:div {:style {:margin "0px 5px"}} "Fahrenheit"]])
 
 ;; -------------------------
 
@@ -241,7 +236,6 @@
 ;; -------------------------
 
 (def me {:surname "Nachname" :name "Vorname"})
-
 (def you {:surname "Highly" :name "Specific"})
 
 (def crud-db (r/atom [me you]))
@@ -264,31 +258,30 @@
            :on-change #(reset! surname-atom (event->target-value %))}])
 
 (defn fields []
-  [:div {:style {:width "50%"}}
-   "Name: " [name-field]
-   [:br]
-   "Surname: "  [surname-field]])
+  [:div {:style {:display "flex" :flex-direction "column"  :align-items "flex-end"}}
+   [:div "Name: " [name-field]]
+   [:div "Surname: "  [surname-field]]])
 
 (defn gen-key []
   (gensym "key-"))
 
 (defn full-name-list-entry [full-name selected-name]
   ^{:key (gen-key)}
-  [:li {:on-click #(if (identical? selected-name full-name)
-                     (reset! selected-full-name nil)
-                     (reset! selected-full-name full-name))
+  [:div {:on-click #(if (identical? selected-name full-name)
+                      (reset! selected-full-name nil)
+                      (reset! selected-full-name full-name))
         ; = is not enough if we allow same names (the world is big)
-        :style (if (identical? full-name selected-name)
-                 {:background-color "LightBlue" :color "white" :list-style-type "none"}
-                 {:list-style-type "none"})}
+         :style (if (identical? full-name selected-name)
+                  {:background-color "LightBlue" :color "white" :margin "0px 2px 0px"}
+                  {:margin "0px 2px 0px"})}
    (:surname full-name) ", " (:name full-name)])
 
 (defn surname-starts-with-prefix [full-name]
   (string/starts-with? (:surname full-name) @prefix))
 
 (defn full-name-list []
-  [:ul
-   {:style {:width "50%"}}
+  [:div
+   {:style {:display "flex" :flex-direction "column" :align-items "flex-start" :border "1px solid"}}
    (doall (map
            #(full-name-list-entry % @selected-full-name)
            (filter #(if
@@ -317,7 +310,9 @@
   (vec (remove #(= % selected-name) db)))
 
 (defn delete-button []
-  [:button {:on-click #(swap! crud-db remove-from-db @selected-full-name)
+  [:button {:on-click #(do
+                         (swap! crud-db remove-from-db @selected-full-name)
+                         (reset! selected-full-name nil))
             :disabled (not @selected-full-name)} "Delete"])
 
 (defn buttons []
@@ -327,9 +322,12 @@
 
 (defn crud-gui []
   [:div
-   "Filter prefix: " [prefix-field] [:br]
-   [full-name-list]
-   [fields]
+   {:style {:display "flex" :flex-direction "column" :justify-content "flex-start"}}
+   [:div  "Filter prefix: " [prefix-field]]
+   [:div
+    {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+    [full-name-list]
+    [:div {:style {:margin "0px 3px"}} [fields]]]
    [buttons]])
 
 ;; -------------------------
@@ -464,147 +462,6 @@
 
 ;; -------------------------
 
-(defn single-column-range [c1 c2]
-  (let [code1 (.charCodeAt c1 0)
-        code2 (.charCodeAt c2 0)]
-    (map char (range code1 (inc code2)))))
-
-(defn range-to-list [r]
-  (let [vars (string/split r #":")
-        var-one (nth vars 0)
-        var-two (nth vars 1)
-        ; inspired by the fact that Google Table works for every order of range
-        ; alternatively the formula could be adjusted as well (thats how Google Table does it)        
-        sorted-columns (sort [(string/upper-case (first var-one))
-                              (string/upper-case (first var-two))])
-        column-one (nth sorted-columns 0)
-        column-two (nth sorted-columns 1)
-        columns (single-column-range column-one column-two)
-        sorted-rows (sort [(js/parseInt (subs var-one 1))
-                           (js/parseInt (subs var-two 1))])
-        row-one (nth sorted-rows 0)
-        row-two (nth sorted-rows 1)
-        rows (range row-one (inc row-two))]
-    (for [row rows column columns]
-      (str column row))))
-
-(def var-pattern-str "[a-zA-Z][0-9][0-9]?")
-(def num-pattern-str "[0-9]+")
-
-(def arguments-pattern-str (str "\\(" "(" num-pattern-str "|" var-pattern-str ")"
-                                "(,(" num-pattern-str "|" var-pattern-str "))*"
-                                "\\)"))
-
-(def arg-function-map {"add" +
-                       "sub" -
-                       "div" /
-                       "mul" *
-                       "mod" mod})
-(def arg-function-names (keys arg-function-map))
-
-(defn str-is-float [s]
-  (= s
-     (str (js/parseFloat s))))
-
-(defn function-pattern->args [s name]
-  (string/split
-   (subs s
-        ; remove ( too
-         (inc (count name))
-        ; remove )
-         (dec (count s)))
-   #","))
-
-(defn args->values [args state]
-  (map #(if (str-is-float %)
-          (js/parseFloat %)
-          (:value (get state %))) args))
-
-(defn replace-arg-function [s fun-name state]
-  (let [pattern (re-pattern (str fun-name arguments-pattern-str))]
-    (string/replace s pattern #(apply
-                                (get arg-function-map fun-name)
-                                (args->values
-                                 (function-pattern->args (first %) fun-name)
-                                 state)))))
-
-(defn replace-arg-functions [s state]
-  (reduce
-   #(replace-arg-function %1 %2 state)
-   s
-   arg-function-names))
-
-(def range-function-map {"sum" +
-                         "prod" *})
-(def range-function-names (keys range-function-map))
-
-(def range-pattern-str (str var-pattern-str ":" var-pattern-str))
-
-(defn replace-range-function [s fun-name state]
-  (let [pattern (re-pattern (str fun-name "\\(" range-pattern-str "\\)"))]
-    (string/replace s pattern #(apply
-                                (get range-function-map fun-name)
-                                (args->values
-                                 (range-to-list
-                                  (first (function-pattern->args  % fun-name)))
-                                 state)))))
-
-(defn replace-range-functions [s state]
-  (reduce
-   #(replace-range-function %1 %2 state)
-   s
-   range-function-names))
-
-(defn replace-vars [s state]
-  (string/replace s (re-pattern var-pattern-str) #(:value (% state))))
-
-(defn replace-functions-once [fml state]
-  (-> fml
-      (#(replace-range-functions % state))
-      (#(replace-arg-functions % state))))
-
-(def re-js-formula #"[0-9+-/*\(\) ]+")
-
-(defn eval-formula [fml state]
-  (let [s (replace-functions-once fml state)]
-    (loop [last-s fml
-           cur-s s]
-      (if (= last-s cur-s)
-        (let [js-formula (replace-vars cur-s state)]
-          ; if at the end it is roughly a js-formula with only numbers we try to eval it        
-          (when (re-matches re-js-formula js-formula)
-            (js/console.log js-formula)
-            (try
-              ; alternative would be to parse the formula to clojure code or use an eval library              
-              (js/eval js-formula)
-              ; we catch everything but return nil
-              (catch :default e
-                nil))))
-        (recur cur-s
-               ; handle recursive definitions
-               (replace-functions-once cur-s state))))))
-
-;; (def test-state {"A1" {:value 1} "A2" {:value 7} "A3" {:value 7} "B2" {:value 3} "C3" {:value 4}})
-;; (def test-fml "add(A1,prod(A1:A3))+prod(A1:A3)")
-
-(def default-cell-state {:value 0 :formula "" :dependants []})
-
-(def default-cells-state (into {} (for [c (single-column-range "A" "Z") n (range 0 100)]
-                                    [(str c n) default-cell-state])))
-
-(def cells-state (r/atom default-cells-state))
-
-(defn cells-container []
-  [:div {"style" {:display "grid" :border "3px solid" :overflow "scroll"}}
-   [:div [:div "test"] [:div "test3"]]
-   [:div "test1"]])
-
-
-(defn cells-gui []
-  (cells-container))
-
-;; -------------------------
-
 (defn home-page []
   [:div
    [:u "Counter"]
@@ -632,7 +489,7 @@
    [:br]
    [:br]
    [:u "Cells"]
-   [cells-gui]])
+   [cells/cells-gui]])
 ;; -------------------------
 ;; Initialize app
 
