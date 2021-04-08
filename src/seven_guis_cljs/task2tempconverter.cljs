@@ -21,8 +21,9 @@
 (defn change-celsius [val]
   (let [n (parse-converter-input val)]
     (if n
-      ((reset! celsius-value n)
-       (reset! fahrenheit-value (celsius->fahrenheit n)))
+      (do
+        (reset! celsius-value n)
+        (reset! fahrenheit-value (celsius->fahrenheit n)))
       (reset! celsius-value val))))
 
 (defn celsius-field []
@@ -37,8 +38,9 @@
 (defn change-fahrenheit [val]
   (let [n (parse-converter-input val)]
     (if n
-      ((reset! fahrenheit-value n)
-       (reset! celsius-value (fahrenheit->celsius n)))
+      (do
+        (reset! fahrenheit-value n)
+        (reset! celsius-value (fahrenheit->celsius n)))
       (reset! fahrenheit-value val))))
 
 (defn fahrenheit-field []
@@ -52,4 +54,7 @@
 
 (defn temp-converter-gui []
   [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
-   [celsius-field] [:div {:style {:margin "0px 5px 0px"}} "Celsius ="] [fahrenheit-field] [:div {:style {:margin "0px 5px"}} "Fahrenheit"]])
+   [celsius-field]
+   [:div {:style {:margin "0px 5px 0px"}} "Celsius ="]
+   [fahrenheit-field]
+   [:div {:style {:margin "0px 5px"}} "Fahrenheit"]])

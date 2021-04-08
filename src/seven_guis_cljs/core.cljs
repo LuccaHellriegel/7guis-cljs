@@ -36,7 +36,8 @@
    [:br]
    [:br]
    [:u "Cells"]
-   [task7cells/cells-gui]])
+   [task7cells/cells-gui]
+   [:br]])
 
 (defn mount-root []
   (d/render [home-page] (.getElementById js/document "app")))

@@ -2,100 +2,154 @@
   (:require [clojure.string :as string]
             [reagent.core :as r]))
 
+;; -------------------------
+;; UTIL
+;; -------------------------
+
+(defn gen-key []
+  (gensym "key-"))
+
 (defn event->target-value [e]
   (-> e .-target .-value))
+
+;; -------------------------
+;; STATE
+;; -------------------------
 
 (def me {:surname "Nachname" :name "Vorname"})
 (def you {:surname "Highly" :name "Specific"})
 
-(def crud-db (r/atom [me you]))
-(def prefix (r/atom ""))
-(def selected-full-name (r/atom me))
-(def name-atom (r/atom ""))
-(def surname-atom (r/atom ""))
+(def default-state {:crud-db [me you]
+                    :prefix ""
+                    :selected-full-name me
+                    :name ""
+                    :surname ""})
+(def state (r/atom default-state))
 
+(defn get-cur-full-name [state]
+  {:name (:name state) :surname (:surname state)})
+
+(defn add-cur-full-name-to-crud-db []
+  (swap! state (fn [st] (assoc st :crud-db
+                               (conj (:crud-db st)
+                                     (get-cur-full-name st))))))
+
+(defn replace-selected-full-name-in-crud-db []
+  (swap! state (fn [st] (assoc st :crud-db
+                               (replace {(:selected-full-name st) (get-cur-full-name st)} (:crud-db st))
+                               :selected-full-name nil))))
+
+(defn remove-selected-full-name-from-crud-db []
+  (swap! state (fn [st] (assoc st :crud-db
+                               (remove #(= % (:selected-full-name st)) (:crud-db st))))))
+
+;; -------------------------
+;; COMPONENTS
+;; -------------------------
+
+; I am resisting the urge to abstract here
+; in a real project I would assume that these buttons get more specialised in the future
 (defn prefix-field []
-  [:input {:type "text" :on-change #(reset! prefix (event->target-value %))}])
+  (let [prefix-cursor (r/cursor state [:prefix])]
+    (fn []
+      [:input {:type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
 
 (defn name-field []
-  [:input {:type "text"
-           :value @name-atom
-           :on-change #(reset! name-atom (event->target-value %))}])
+  (let [name-cursor (r/cursor state [:name])]
+    (fn []
+      [:input {:type "text"
+               :value @name-cursor
+               :on-change #(reset! name-cursor (event->target-value %))}])))
 
 (defn surname-field []
-  [:input {:type "text"
-           :value @surname-atom
-           :on-change #(reset! surname-atom (event->target-value %))}])
+  (let [surname-cursor (r/cursor state [:surname])]
+    (fn []
+      [:input {:type "text"
+               :value @surname-cursor
+               :on-change #(reset! surname-cursor (event->target-value %))}])))
 
 (defn fields []
   [:div {:style {:display "flex" :flex-direction "column"  :align-items "flex-end"}}
    [:div "Name: " [name-field]]
    [:div "Surname: "  [surname-field]]])
 
-(defn gen-key []
-  (gensym "key-"))
+(defn full-name-list-entry [full-name]
+  (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
+    (fn []
+      [:div {:on-click #(do
+                          (when (= @selected-full-name-cursor full-name)
+                            ; we reset pro forma in the case of the same name
+                            ; reagent checks via =
+                            ; so changing selection of duplicates doesnt re-render otherwise                             
+                            (reset! selected-full-name-cursor nil))
+                          (if (identical? @selected-full-name-cursor full-name)
+                            (reset! selected-full-name-cursor nil)
+                            (reset! selected-full-name-cursor full-name)))
+             ; = is not enough if we allow same names (the world is big)
+             :style (if (identical? @selected-full-name-cursor full-name)
+                      {:background-color "LightBlue" :color "white" :margin "0px 2px 0px"}
+                      {:margin "0px 2px 0px"})}
+       (:surname full-name) ", " (:name full-name)])))
 
-(defn full-name-list-entry [full-name selected-name]
-  ^{:key (gen-key)}
-  [:div {:on-click #(if (identical? selected-name full-name)
-                      (reset! selected-full-name nil)
-                      (reset! selected-full-name full-name))
-        ; = is not enough if we allow same names (the world is big)
-         :style (if (identical? full-name selected-name)
-                  {:background-color "LightBlue" :color "white" :margin "0px 2px 0px"}
-                  {:margin "0px 2px 0px"})}
-   (:surname full-name) ", " (:name full-name)])
-
-(defn surname-starts-with-prefix [full-name]
-  (string/starts-with? (:surname full-name) @prefix))
+(defn surname-starts-with-prefix [full-name prefix]
+  (string/starts-with? (:surname full-name) prefix))
 
 (defn full-name-list []
-  [:div
-   {:style {:display "flex" :flex-direction "column" :align-items "flex-start" :border "1px solid"}}
-   (doall (map
-           #(full-name-list-entry % @selected-full-name)
-           (filter #(if
-                     (surname-starts-with-prefix %)
-                      true
-                      (do
-                        (when (= @selected-full-name %)
-                          (reset! selected-full-name nil))
-                        false)) @crud-db)))])
-
-(defn add-full-name-to-vec [v]
-  (conj v {:name @name-atom :surname @surname-atom}))
+  (let [selected-full-name-cursor (r/cursor state [:selected-full-name])
+        crud-db-cursor (r/cursor state [:crud-db])
+        prefix-cursor (r/cursor state [:prefix])]
+    (fn []
+      [:div
+       {:style {:display "flex" :flex-direction "column" :align-items "flex-start" :border "1px solid" :min-width "150px"}}
+       (doall
+        (for [full-name
+              ; assuming "filter" in the spec has the same interpretation as in Clojure 
+              ; (filter everything else out / select where pred = true)
+              (filter #(if
+                        (surname-starts-with-prefix % @prefix-cursor)
+                         true
+                         ; if the selected name is filtered out, 
+                         ; it should be set nil to make sure the correct buttons are enabled
+                         (do
+                           (when (= @selected-full-name-cursor %)
+                             (reset! selected-full-name-cursor nil))
+                           false)) @crud-db-cursor)]
+          ^{:key (gen-key)} [full-name-list-entry full-name]))])))
 
 (defn create-button []
-  [:button {:on-click #(swap! crud-db add-full-name-to-vec)} "Create"])
-
-(defn replace-in-db [db selected-name new-name]
-  (vec (replace {selected-name new-name} db)))
+  [:button {:on-click add-cur-full-name-to-crud-db} "Create"])
 
 ; cant find anything about "" / empty updates in the spec, so we will allow it
 (defn update-button []
-  [:button {:on-click #(swap! crud-db replace-in-db @selected-full-name {:name @name-atom :surname @surname-atom})
-            :disabled (not @selected-full-name)} "Update"])
-
-(defn remove-from-db [db selected-name]
-  (vec (remove #(= % selected-name) db)))
+  (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
+    (fn []
+      [:button {:on-click replace-selected-full-name-in-crud-db
+                :disabled (not @selected-full-name-cursor)} "Update"])))
 
 (defn delete-button []
-  [:button {:on-click #(do
-                         (swap! crud-db remove-from-db @selected-full-name)
-                         (reset! selected-full-name nil))
-            :disabled (not @selected-full-name)} "Delete"])
+  (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
+    (fn []
+      [:button {:on-click #(do
+                             (remove-selected-full-name-from-crud-db)
+                             (reset! selected-full-name-cursor nil))
+                :disabled (not @selected-full-name-cursor)} "Delete"])))
+
+(def row-start-style {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}})
 
 (defn buttons []
-  [:div [create-button] " "
-   [update-button] " "
-   [delete-button]])
+  [:div row-start-style
+   [:div
+    [create-button]]
+   [:div {:style {:margin "0px 50px"}}
+    [update-button]]
+   [:div
+    [delete-button]]])
 
 (defn crud-gui []
   [:div
    {:style {:display "flex" :flex-direction "column" :justify-content "flex-start"}}
-   [:div  "Filter prefix: " [prefix-field]]
-   [:div
-    {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
-    [full-name-list]
-    [:div {:style {:margin "0px 3px"}} [fields]]]
+   [:div (assoc-in row-start-style [:style :margin] "0px 0px 2px")
+    "Filter prefix: " [prefix-field]]
+   [:div row-start-style
+    [full-name-list] [:div {:style {:margin "0px 3px"}} [fields]]]
    [buttons]])
