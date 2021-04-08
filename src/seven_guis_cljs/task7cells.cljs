@@ -36,25 +36,24 @@
 (def columns (column-range "A" "Z"))
 (def rows (range 0 100))
 
+;; -------------------------
+;; STATE
+;; -------------------------
+
 (def default-cells-state (into {}
                                (for
                                 [c columns n
                                  (range 0 100)]
                                  [(keyword (str c n)) default-cell-state])))
 
-;; -------------------------
-;; STATE
-;; -------------------------
-
 (def cells-state (r/atom default-cells-state))
 
-; TODO: remove most direct cells-state refs
-; TODO: optimize change propagation -> with least dependencies first?
+; Test-Data
 (def test-state {:A0 {:dependencies [] :formula "1" :value 1}
-                 :A1 {:dependencies [:A0] :formula "=A0" :value 1}
-                ;;  :A2 {:dependencies [:A0 :A1]}
-                ;;  :A3 {:dependencies []}
-                 })
+                 :A1 {:dependencies [] :formula "2" :value 2}
+                 :A2 {:dependencies [] :formula "2" :value 2}
+                 :B0 {:dependencies [:A0 :A1 :A2 :A3 :A4] :formula "=sum(A0:A4)+1*2 / (2) + add(A0,A1) - mul(A1,A0) -1" :value 6}
+                 :B1 {:dependencies [:B0] :formula "=B0+1" :value 7}})
 (swap! cells-state merge test-state)
 
 
@@ -206,7 +205,7 @@
           ; if at the end it is roughly a js-formula we try to eval it        
           (when (re-matches js-formula-pattern js-formula)
             (try
-              ; an alternative would be to parse the formula to clojure code or use an eval library              
+              ; an alternative would be to parse the formula to Clojure code or use an eval library              
               (js/eval js-formula)
               ; we catch everything but return nil
               (catch :default e
@@ -262,6 +261,9 @@
 ;; CHANGE PROPAGATION
 ;; -------------------------
 
+; alternatively we could optimize the propagation by ordering the dependants according to their dependants
+; I assume that by starting with the dependant with the least dependants, 
+; we could avoid some calculations
 (defn propagate-change [state-atom state-keys id]
   (let [state @state-atom
         dependants (find-dependants state state-keys id)]
@@ -298,6 +300,8 @@
           (set-cell-value cell-cursor new-val)
           (propagate-change cells-state (keys @cells-state) id))
         ; we do not propagate wrong inputs
+        ; alternatively we could propagate them, 
+        ; but then we would need to stop before it cycles        
         (reset-cell-value cell-cursor)))))
 
 (defn invalid-cell-state? [disabled cell-state]
@@ -307,7 +311,7 @@
   (and
    disabled
    (not (:value cell-state))
-   (seq (:formula cell-state))))
+   (formula? (:formula cell-state))))
 
 (defn reset-cell-state [cell-cursor]
   (reset! cell-cursor default-cell-state))
@@ -332,7 +336,7 @@
         enable #(reset! disabled false)]
     (fn []
       [:input {:type "text"
-               :style {:border "1px solid" :min-width "80px" :min-height "30px"
+               :style {:outline "1px solid" :min-width "120px" :min-height "30px" :padding "1px 2px"
                        :background-color (when
                                           (invalid-cell-state? @disabled @cell-cursor)
                                            "red")}
@@ -362,7 +366,8 @@
 ;; -------------------------
 
 (defn header-cell [content]
-  [:div {:style {:min-width "80px" :min-height "30px"}} content])
+  ; we add the border px of cell to the min values here  
+  [:div {:style {:min-width "124px" :min-height "34px" :padding "1px 2px"}} content])
 
 (defn top-row []
   [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
@@ -378,13 +383,10 @@
       ^{:key (gen-key)} [cell (keyword (str c r))])
     ^{:key (gen-key)}  [header-cell (str r)])])
 
-(defn cells-container []
+(defn cells-gui []
   [:div
    {"style" {:max-height "600px" :display "flex" :flex-direction "column" :outline "3px solid" :overflow "scroll" :justify-content "flex-start"}}
    (conj
     (for [r rows]
       ^{:key (gen-key)} [row r])
     ^{:key (gen-key)} [top-row])])
-
-(defn cells-gui []
-  (cells-container))

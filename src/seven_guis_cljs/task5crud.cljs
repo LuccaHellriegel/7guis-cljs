@@ -16,15 +16,17 @@
 ;; STATE
 ;; -------------------------
 
-(def me {:surname "Nachname" :name "Vorname"})
-(def you {:surname "Highly" :name "Specific"})
-
-(def default-state {:crud-db [me you]
+(def default-state {:crud-db []
                     :prefix ""
-                    :selected-full-name me
+                    :selected-full-name nil
                     :name ""
                     :surname ""})
 (def state (r/atom default-state))
+
+; Test-Data
+(def me {:surname "Nachname" :name "Vorname"})
+(def you {:surname "Highly" :name "Specific"})
+(reset! state (assoc @state :crud-db [me you] :selected-full-name me))
 
 (defn get-cur-full-name [state]
   {:name (:name state) :surname (:surname state)})
