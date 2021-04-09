@@ -336,7 +336,7 @@
         enable #(reset! disabled false)]
     (fn []
       [:input {:type "text"
-               :style {:outline "1px solid" :min-width "120px" :min-height "30px" :padding "1px 2px"
+               :style {:border "1px solid" :min-width "120px" :min-height "30px" :padding "1px 2px"
                        :background-color (when
                                           (invalid-cell-state? @disabled @cell-cursor)
                                            "red")}
@@ -366,8 +366,7 @@
 ;; -------------------------
 
 (defn header-cell [content]
-  ; we add the border px of cell to the min values here  
-  [:div {:style {:min-width "124px" :min-height "34px" :padding "1px 2px"}} content])
+  [:div {:style {:min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px groove"}} content])
 
 (defn top-row []
   [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
