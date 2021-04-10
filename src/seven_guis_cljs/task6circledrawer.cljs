@@ -40,27 +40,23 @@
               cur-circle)
             (recur (dec index))))))))
 
-(defn can-undo? [present]
-  (> (count present) 0))
+(defn can-undo? [present] (> (count present) 0))
 
 (defn undo []
   (let [present (remove-select (:present @state))
         future (:future @state)]
-    (when (can-undo? present)
-      (swap! state assoc
-             :future (conj future (last present))
-             :present (pop present)))))
+    (swap! state assoc
+           :future (conj future (last present))
+           :present (pop present))))
 
-(defn can-redo? [future]
-  (> (count future) 0))
+(defn can-redo? [future] (> (count future) 0))
 
 (defn redo []
   (let [present (remove-select (:present @state))
         future (:future @state)]
-    (when (can-redo? future)
-      (swap! state assoc
-             :present (conj present (last future))
-             :future (pop future)))))
+    (swap! state assoc
+           :present (conj present (last future))
+           :future (pop future))))
 
 (defn get-modal-cursor []
   (r/cursor state [:modal]))
@@ -131,23 +127,33 @@
 ;; COMPONENTS
 ;; -------------------------
 
-(defn undo-button [disabled]
-  [:button {:on-click undo
-            :disabled disabled} "Undo"])
+(defn undo-button [modal-cursor]
+  (let [present (get-present-cursor)]
+    (fn []
+      [:button {:on-click undo
+                :disabled (or
+                           @modal-cursor
+                           (not (can-undo? @present)))}
+       "Undo"])))
 
-(defn redo-button [disabled]
-  [:button {:on-click redo
-            :disabled disabled} "Redo"])
+(defn redo-button [modal-cursor]
+  (let [future (r/cursor state [:future])]
+    (fn []
+      [:button {:on-click redo
+                :disabled (or
+                           @modal-cursor
+                           (not (can-redo? @future)))}
+       "Redo"])))
 
 (defn buttons []
-  [:div {:class "flex-row-start"}
-   [:div {:style {:margin "0px 4px 0px 0px"}}
-    [undo-button
-     (or (not (can-undo? (:present @state)))
-         (:modal @state))]]
-   [:div [redo-button
-          (or (not (can-redo? (:future @state)))
-              (:modal @state))]]])
+  (let [modal (get-modal-cursor)]
+    [:div {:class "flex-row-start"}
+     [:div {:style {:margin "0px 4px 0px 0px"}}
+      [undo-button
+       modal]]
+     [:div
+      [redo-button
+       modal]]]))
 
 (defn circle-drawer [circles]
   (r/after-render
