@@ -24,12 +24,12 @@
 (def state (r/atom default-state))
 
 ; Test-Data
-(def me {:surname "Nachname" :name "Vorname"})
-(def you {:surname "Highly" :name "Specific"})
+(def me {:surname "Nachname" :name "Vorname" :time 10})
+(def you {:surname "Highly" :name "Specific" :time 10})
 (reset! state (assoc @state :crud-db [me you] :selected-full-name me))
 
 (defn get-cur-full-name [state]
-  {:name (:name state) :surname (:surname state)})
+  {:name (:name state) :surname (:surname state) :time (js/Date.now)})
 
 (defn add-cur-full-name-to-crud-db []
   (swap! state (fn [st] (assoc st :crud-db
@@ -38,12 +38,12 @@
 
 (defn replace-selected-full-name-in-crud-db []
   (swap! state (fn [st] (assoc st :crud-db
-                               (replace {(:selected-full-name st) (get-cur-full-name st)} (:crud-db st))
+                               (vec (replace {(:selected-full-name st) (get-cur-full-name st)} (:crud-db st)))
                                :selected-full-name nil))))
 
 (defn remove-selected-full-name-from-crud-db []
   (swap! state (fn [st] (assoc st :crud-db
-                               (remove #(= % (:selected-full-name st)) (:crud-db st))))))
+                               (vec (remove #(= % (:selected-full-name st)) (:crud-db st)))))))
 
 ;; -------------------------
 ;; COMPONENTS
@@ -78,17 +78,10 @@
 (defn full-name-list-entry [full-name]
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
     (fn []
-      [:div {:on-click #(do
-                          (when (= @selected-full-name-cursor full-name)
-                            ; we reset pro forma in the case of the same name
-                            ; reagent checks via =
-                            ; so changing selection of duplicates doesnt re-render otherwise                             
-                            (reset! selected-full-name-cursor nil))
-                          (if (identical? @selected-full-name-cursor full-name)
-                            (reset! selected-full-name-cursor nil)
-                            (reset! selected-full-name-cursor full-name)))
-             ; = is not enough if we allow same names (the world is big)
-             :style (if (identical? @selected-full-name-cursor full-name)
+      [:div {:on-click #(if (= @selected-full-name-cursor full-name)
+                          (reset! selected-full-name-cursor nil)
+                          (reset! selected-full-name-cursor full-name))
+             :style (if (= @selected-full-name-cursor full-name)
                       {:background-color "LightBlue" :color "white" :margin "0px 2px 0px"}
                       {:margin "0px 2px 0px"})}
        (:surname full-name) ", " (:name full-name)])))
@@ -113,6 +106,9 @@
                          true
                          ; if the selected name is filtered out, 
                          ; it should be set nil to make sure the correct buttons are enabled
+                         ; at this scale this could also be solved by iterating over the names twice
+                         ; but a future improvement / more robust solution would be to make an extra function that returns
+                         ; the filtered names and the one that was filtered out                                                                           
                          (do
                            (when (= @selected-full-name-cursor %)
                              (reset! selected-full-name-cursor nil))
