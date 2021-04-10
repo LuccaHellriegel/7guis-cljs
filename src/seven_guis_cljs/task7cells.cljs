@@ -46,7 +46,7 @@
                                  (range 0 100)]
                                  [(keyword (str c n)) default-cell-state])))
 
-(def cells-state (r/atom default-cells-state))
+(def state (r/atom default-cells-state))
 
 ; Test-Data
 (def test-state {:A0 {:dependencies [] :formula "1" :value 1}
@@ -54,7 +54,7 @@
                  :A2 {:dependencies [] :formula "2" :value 2}
                  :B0 {:dependencies [:A0 :A1 :A2 :A3 :A4] :formula "=sum(A0:A4)+1*2 / (2) + add(A0,A1) - mul(A1,A0) -1" :value 6}
                  :B1 {:dependencies [:B0] :formula "=B0+1" :value 7}})
-(swap! cells-state merge test-state)
+(swap! state merge test-state)
 
 
 (defn vec-contains? [v i]
@@ -222,7 +222,7 @@
         new-visited (conj visited id)]
     (if (some visited cur-dependencies)
       false
-      ; using lazy functions to not evaluate all paths
+      ; using lazy functions to not evaluate all paths if not necessary
       (not (some #(= % false)
                  (map #(depth-first-search state state-keys % new-visited) cur-dependencies))))))
 
@@ -249,12 +249,12 @@
 (defn formula? [fml]
   (string/starts-with? fml "="))
 
-(defn formula-str->val [formula vars id]
+(defn formula-str->val [state-atom formula vars id]
   (cond
     (formula-self-ref? formula id) nil
     (str-float? formula) (js/parseFloat formula)
-    (not (cycle-free? @cells-state vars id)) nil
-    (formula? formula) (eval-formula (subs formula 1) cells-state)
+    (not (cycle-free? @state-atom vars id)) nil
+    (formula? formula) (eval-formula (subs formula 1) state-atom)
     :else nil))
 
 ;; -------------------------
@@ -270,12 +270,12 @@
     (doseq [d dependants]
       (prn
        (let [formula (:formula (d state))
-             new-val (formula-str->val formula (formula->vars formula) d)]
+             new-val (formula-str->val state-atom formula (formula->vars formula) d)]
          (if new-val
            (do
-             (swap! cells-state assoc-in [d :value] new-val)
+             (swap! state-atom assoc-in [d :value] new-val)
              (propagate-change state-atom state-keys d))
-           (swap! cells-state assoc-in [d :value] nil)))))))
+           (swap! state-atom assoc-in [d :value] nil)))))))
 
 ;; -------------------------
 ;; FORMULA CELL
@@ -294,11 +294,11 @@
         vars (formula->vars formula)]
     ; save new dependencies in any case, update could make the formula valid
     (swap! cell-cursor #(assoc % :dependencies (vec vars)))
-    (let [new-val (formula-str->val formula vars id)]
+    (let [new-val (formula-str->val state formula vars id)]
       (if new-val
         (do
           (set-cell-value cell-cursor new-val)
-          (propagate-change cells-state (keys @cells-state) id))
+          (propagate-change state (keys @state) id))
         ; we do not propagate wrong inputs
         ; alternatively we could propagate them, 
         ; but then we would need to stop before it cycles        
@@ -330,7 +330,7 @@
   (seq (:formula @cell-cursor)))
 
 (defn cell [id]
-  (let [cell-cursor (r/cursor cells-state [id])
+  (let [cell-cursor (r/cursor state [id])
         disabled (r/atom true)
         disable #(reset! disabled true)
         enable #(reset! disabled false)]
