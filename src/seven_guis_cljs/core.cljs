@@ -13,7 +13,7 @@
   [:h3 [:u [:b text]]])
 
 (defn home-page []
-  [:div
+  [:div {:style {:display "flex" :flex-direction "column" :justify-content "center" :width "100%"}}
    [heading "1. Counter"]
    [task1counter/counter-gui]
    [:br]

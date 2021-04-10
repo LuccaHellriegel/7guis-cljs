@@ -181,7 +181,7 @@
       (circle-drawer @present-cursor)
       [:canvas {:style {:border "3px solid"}
                 ; this shouldnt be in the style-map because then it doesnt affect the bitmap
-                :width "300px" :height "200px"
+                :width "400px" :height "300px"
                 :id canvas-id
                 :on-context-menu
                 #(when (not @modal-cursor) (let [clicked-circle (click-in-circle? @present-cursor (event->canvas-mouse-pos %))]
@@ -237,13 +237,13 @@
                      :opacity 1
                      :background-color "lightblue"
                      :text-color "black"
-                     :left "57%"
+                     :left "50%"
                      :top "50%"
                      :font-size 15
-                     :transform "translate(-50%, -57%)"}}
-       [diameter-text @present-cursor]
-       [diameter-slider @present-cursor]
-       [close-modal-button @present-cursor]])))
+                     :transform "translate(-50%, -50%)"}}
+       (when @modal-cursor [diameter-text @present-cursor])
+       (when @modal-cursor  [diameter-slider @present-cursor])
+       (when @modal-cursor [close-modal-button @present-cursor])])))
 
 (defn circle-drawer-gui []
   [:div

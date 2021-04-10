@@ -102,7 +102,9 @@ For the data structure, I have chosen a simple map where each cell contains the 
 
 #### _Improvement:_
 
-A possible improvement is to differentiate the ways in which the formula is wrong and display that to the user and also propagate the error somewhat (e.g. until we start cycling) so the user better knows which cells are affected.
+Ideally we would only render the cells that are visible, e.g. by using react-window. Currently, according to the dev-tools profiler the rendering of cells takes most of the load-time of the page.
+
+A possible UX improvement is to differentiate the ways in which the formula is wrong and display that to the user and also propagate the error somewhat (e.g. until we start cycling) so the user better knows which cells are affected.
 In general, the possibilities for extension are endless (just look at Google Table and its autocomplete features etc.).
 
 # Developer instructions
