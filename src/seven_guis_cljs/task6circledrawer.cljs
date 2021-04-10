@@ -40,18 +40,24 @@
               cur-circle)
             (recur (dec index))))))))
 
+(defn can-undo? [present]
+  (> (count present) 0))
+
 (defn undo []
   (let [present (remove-select (:present @state))
         future (:future @state)]
-    (when (> (count present) 0)
+    (when (can-undo? present)
       (swap! state assoc
              :future (conj future (last present))
              :present (pop present)))))
 
+(defn can-redo? [future]
+  (> (count future) 0))
+
 (defn redo []
   (let [present (remove-select (:present @state))
         future (:future @state)]
-    (when (> (count future) 0)
+    (when (can-redo? future)
       (swap! state assoc
              :present (conj present (last future))
              :future (pop future)))))
@@ -125,20 +131,23 @@
 ;; COMPONENTS
 ;; -------------------------
 
-(defn undo-button [modal]
+(defn undo-button [disabled]
   [:button {:on-click undo
-            :disabled modal} "Undo"])
+            :disabled disabled} "Undo"])
 
-(defn redo-button [modal]
+(defn redo-button [disabled]
   [:button {:on-click redo
-            :disabled modal} "Redo"])
+            :disabled disabled} "Redo"])
 
 (defn buttons []
-  (let [modal-cursor (get-modal-cursor)]
-    (fn []
-      [:div {:class "flex-row-start"}
-       [:div {:style {:margin "0px 4px 0px 0px"}} [undo-button @modal-cursor]]
-       [:div [redo-button @modal-cursor]]])))
+  [:div {:class "flex-row-start"}
+   [:div {:style {:margin "0px 4px 0px 0px"}}
+    [undo-button
+     (or (not (can-undo? (:present @state)))
+         (:modal @state))]]
+   [:div [redo-button
+          (or (not (can-redo? (:future @state)))
+              (:modal @state))]]])
 
 (defn circle-drawer [circles]
   (r/after-render
