@@ -8,12 +8,8 @@
 (def one-way-flight "one-way flight")
 (def return-flight "return flight")
 
-(def flight-type (r/atom one-way-flight))
-(def start-value (r/atom "27.03.2014"))
-(def return-value (r/atom "27.03.2014"))
-
-(defn is-one-way-flight []
-  (= @flight-type one-way-flight))
+(def default-state {:start "27.03.2014" :return "27.03.2014" :flight-type one-way-flight})
+(def state (r/atom default-state))
 
 ;; -------------------------
 ;; DATE PARSING
@@ -39,40 +35,48 @@
   (-> e .-target .-value))
 
 (defn flight-type-select []
-  [:select
-   {:on-change #(reset! flight-type (event->target-value %))}
-   [:option one-way-flight]
-   [:option return-flight]])
+  (let [flight-type (r/cursor state [:flight-type])]
+    (fn []
+      [:select
+       {:on-change #(reset! flight-type (event->target-value %))}
+       [:option one-way-flight]
+       [:option return-flight]])))
 
 (def red-background-style {:background-color "red"})
 
 (defn start-field []
-  [:input
-   {:type "text"
-    :value @start-value
-    :style (when
-            (not (re-match-date-str @start-value))
-             red-background-style)
-    :on-change #(reset! start-value
-                        (event->target-value %))}])
+  (let [start-value (r/cursor state [:start])]
+    (fn []
+      [:input
+       {:type "text"
+        :value @start-value
+        :style (when
+                (not (re-match-date-str @start-value))
+                 red-background-style)
+        :on-change #(reset! start-value
+                            (event->target-value %))}])))
 
 (defn return-field []
-  [:input
-   {:type "text"
-    :value @return-value
-    :disabled (is-one-way-flight)
-    :style (when
-            (not (re-match-date-str @return-value))
-             red-background-style)
-    :on-change #(reset! return-value
-                        (event->target-value %))}])
+  (let [return-value (r/cursor state [:return])
+        flight-type (r/cursor state [:flight-type])]
+    (fn []
+      [:input
+       {:type "text"
+        :value @return-value
+        :disabled (= @flight-type one-way-flight)
+        :style (when
+                (and (not (re-match-date-str @return-value))
+                     (not (= @flight-type one-way-flight)))
+                 red-background-style)
+        :on-change #(reset! return-value
+                            (event->target-value %))}])))
 
-(defn book-message [flight dates]
-  (case flight
-    "one-way flight" (str "You have booked a " one-way-flight " on " (:start dates) ".")
+(defn book-message [state]
+  (case (:flight-type state)
+    "one-way flight" (str "You have booked a " one-way-flight " on " (:start state) ".")
     "return flight"  (str
-                      "You have booked a flight on " (:start dates)
-                      " and a return flight on " (:return dates) ".")))
+                      "You have booked a flight on " (:start state)
+                      " and a return flight on " (:return state) ".")))
 
 (defn return-strictly-before-start [start return]
   (> (date-str-to-int start)
@@ -81,19 +85,20 @@
 (defn book-button []
   (let [out (r/atom "")]
     (fn []
-      [:div
-       [:button
-        {:on-click #(reset! out (book-message
-                                 @flight-type
-                                 {:start @start-value :return @return-value}))
-         :disabled (or (not (re-match-date-str @start-value))
-                       (and
-                        (not (is-one-way-flight))
-                        (or
-                         (not (re-match-date-str @return-value))
-                         (return-strictly-before-start @start-value @return-value))))}
-        "Book"]
-       [:div @out]])))
+      (let [start-value (:start @state)
+            return-value (:return @state)]
+        [:div
+         [:button
+          {:on-click #(reset! out (book-message
+                                   @state))
+           :disabled (or (not (re-match-date-str start-value))
+                         (and
+                          (not (= (:flight-type state) one-way-flight))
+                          (or
+                           (not (re-match-date-str return-value))
+                           (return-strictly-before-start start-value return-value))))}
+          "Book"]
+         [:div @out]]))))
 
 (defn flight-booker-gui []
   [:div
