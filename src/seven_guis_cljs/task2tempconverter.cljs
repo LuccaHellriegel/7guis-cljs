@@ -53,7 +53,7 @@
                      change-fahrenheit)}]])
 
 (defn temp-converter-gui []
-  [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+  [:div {:class "flex-row-start"}
    [celsius-field]
    [:div {:style {:margin "0px 5px 0px"}} "Celsius ="]
    [fahrenheit-field]

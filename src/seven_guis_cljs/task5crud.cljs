@@ -102,7 +102,8 @@
         prefix-cursor (r/cursor state [:prefix])]
     (fn []
       [:div
-       {:style {:display "flex" :flex-direction "column" :align-items "flex-start" :border "1px solid" :min-width "150px"}}
+       {:class "flex-column-start"
+        :style {:border "1px solid" :min-width "150px"}}
        (doall
         (for [full-name
               ; assuming "filter" in the spec has the same interpretation as in Clojure 
@@ -136,10 +137,8 @@
                              (reset! selected-full-name-cursor nil))
                 :disabled (not @selected-full-name-cursor)} "Delete"])))
 
-(def row-start-style {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}})
-
 (defn buttons []
-  [:div row-start-style
+  [:div {:class "flex-row-start"}
    [:div
     [create-button]]
    [:div {:style {:margin "0px 50px"}}
@@ -149,9 +148,10 @@
 
 (defn crud-gui []
   [:div
-   {:style {:display "flex" :flex-direction "column" :justify-content "flex-start"}}
-   [:div (assoc-in row-start-style [:style :margin] "0px 0px 2px")
+   {:class "flex-column-start"}
+   [:div {:class "flex-row-start"
+          :style {:margin "0px 0px 2px"}}
     "Filter prefix: " [prefix-field]]
-   [:div row-start-style
+   [:div {:class "flex-row-start"}
     [full-name-list] [:div {:style {:margin "0px 3px"}} [fields]]]
    [buttons]])

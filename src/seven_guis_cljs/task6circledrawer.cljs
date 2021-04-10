@@ -136,7 +136,7 @@
 (defn buttons []
   (let [modal-cursor (get-modal-cursor)]
     (fn []
-      [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+      [:div {:class "flex-row-start"}
        [:div {:style {:margin "0px 4px 0px 0px"}} [undo-button @modal-cursor]]
        [:div [redo-button @modal-cursor]]])))
 

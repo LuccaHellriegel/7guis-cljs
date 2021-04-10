@@ -34,3 +34,15 @@ a {
 a:hover {
 	text-decoration: underline;
 }
+
+.flex-row-start {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+.flex-column-start {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}

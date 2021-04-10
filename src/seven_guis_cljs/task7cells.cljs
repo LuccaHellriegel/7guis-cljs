@@ -369,14 +369,14 @@
   [:div {:style {:min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px groove"}} content])
 
 (defn top-row []
-  [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+  [:div {:class "flex-row-start"}
    (conj
     (for [c columns]
       ^{:key (gen-key)} [header-cell c])
     ^{:key (gen-key)} [header-cell ""])])
 
 (defn row [r]
-  [:div {:style {:display "flex" :flex-direction "row" :justify-content "flex-start"}}
+  [:div {:class "flex-row-start"}
    (conj
     (for [c columns]
       ^{:key (gen-key)} [cell (keyword (str c r))])
@@ -384,7 +384,8 @@
 
 (defn cells-gui []
   [:div
-   {"style" {:max-height "600px" :display "flex" :flex-direction "column" :outline "3px solid" :overflow "scroll" :justify-content "flex-start"}}
+   {:class "flex-column-start"
+    :style {:max-height "600px" :outline "3px solid" :overflow "scroll"}}
    (conj
     (for [r rows]
       ^{:key (gen-key)} [row r])
