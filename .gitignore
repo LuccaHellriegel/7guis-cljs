@@ -18,3 +18,4 @@ pom.xml.asc
 .shadow-cljs
 .calva
 node_modules
+.VSCodeCounter

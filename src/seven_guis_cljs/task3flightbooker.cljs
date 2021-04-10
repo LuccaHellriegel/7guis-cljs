@@ -34,15 +34,18 @@
 (defn event->target-value [e]
   (-> e .-target .-value))
 
+(def field-style {:font-size "2em" :margin "4px"})
+
 (defn flight-type-select []
   (let [flight-type (r/cursor state [:flight-type])]
     (fn []
       [:select
-       {:on-change #(reset! flight-type (event->target-value %))}
+       {:style field-style
+        :on-change #(reset! flight-type (event->target-value %))}
        [:option one-way-flight]
        [:option return-flight]])))
 
-(def red-background-style {:background-color "red"})
+(def red-background-style (assoc field-style :background-color "indianred"))
 
 (defn start-field []
   (let [start-value (r/cursor state [:start])]
@@ -50,9 +53,10 @@
       [:input
        {:type "text"
         :value @start-value
-        :style (when
+        :style (if
                 (not (re-match-date-str @start-value))
-                 red-background-style)
+                 red-background-style
+                 field-style)
         :on-change #(reset! start-value
                             (event->target-value %))}])))
 
@@ -64,10 +68,11 @@
        {:type "text"
         :value @return-value
         :disabled (= @flight-type one-way-flight)
-        :style (when
+        :style (if
                 (and (not (re-match-date-str @return-value))
                      (not (= @flight-type one-way-flight)))
-                 red-background-style)
+                 red-background-style
+                 field-style)
         :on-change #(reset! return-value
                             (event->target-value %))}])))
 
@@ -89,7 +94,8 @@
             return-value (:return @state)]
         [:div
          [:button
-          {:on-click #(reset! out (book-message
+          {:style field-style
+           :on-click #(reset! out (book-message
                                    @state))
            :disabled (or (not (re-match-date-str start-value))
                          (and
@@ -98,7 +104,9 @@
                            (not (re-match-date-str return-value))
                            (return-strictly-before-start start-value return-value))))}
           "Book"]
-         [:div @out]]))))
+         (when (seq @out)
+           [:div {:style {:background-color "lightblue"
+                          :border-radius "30px" :border "2px solid" :padding "12px " :font-size "1.2em" :margin "10px"}} @out])]))))
 
 (defn flight-booker-gui []
   [:div

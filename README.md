@@ -7,7 +7,6 @@ Know a more idiomatic way to solve something? Be sure to open an issue and let m
 Below I have detailed some design decisions, alternatives, limitations and the main features. Besides that I have taken care to comment many decisions in the code.
 
 The current implementation is as far as I can tell bug-free and fulfills the 7GUIs spec.
-Generally, I have kept as close to the 7GUIs spec in terms of layout and functionality as made sense.
 In some tasks I have included test data to make testing the features easier. The data can be removed by searching "Test-Data" and removing the corresponding code-block.
 
 # Tasks

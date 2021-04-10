@@ -336,10 +336,11 @@
         enable #(reset! disabled false)]
     (fn []
       [:input {:type "text"
-               :style {:border "1px solid" :min-width "120px" :min-height "30px" :padding "1px 2px"
+               :style {:font-size "1em"
+                       :border "1px groove" :min-width "120px" :min-height "30px" :padding "1px 2px"
                        :background-color (when
                                           (invalid-cell-state? @disabled @cell-cursor)
-                                           "red")}
+                                           "indianred")}
                :read-only @disabled
                :value (cell-display-value @cell-cursor @disabled)
                :on-blur #(when (and
@@ -366,7 +367,7 @@
 ;; -------------------------
 
 (defn header-cell [content]
-  [:div {:style {:min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px groove"}} content])
+  [:div {:style {:font-size "1em" :min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px solid"}} content])
 
 (defn top-row []
   [:div {:class "flex-row-start"}
