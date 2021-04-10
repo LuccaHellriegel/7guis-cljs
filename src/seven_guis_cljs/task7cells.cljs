@@ -88,13 +88,16 @@
 ;; FORMULA VARIABLE / FUNCTION ARGUMENT PARSING
 ;; -------------------------
 
-(defn args->vals [args state]
-  (map #(if (str-float? %)
-          (js/parseFloat %)
+(defn var->val [var state]
+  (if (str-float? var)
+    (js/parseFloat var)
           ; var-case
-          (let [val (:value
-                     ((keyword %) state))]
-            (if val val cell-default-value))) args))
+    (let [val (:value
+               ((keyword var) state))]
+      (if val val cell-default-value))))
+
+(defn vars->vals [vars state]
+  (map #(var->val % state) vars))
 
 (defn arg-fun-str->arg-str [s fun-name]
   (subs s
@@ -126,7 +129,6 @@
              (second columns))]
       (str c r))))
 
-
 ;; -------------------------
 ;; FORMULA FUNCTION PARSING
 ;; -------------------------
@@ -147,7 +149,7 @@
                   (arg-function-pattern fun-name)
                   #(apply
                     (get arg-function-map fun-name)
-                    (args->vals
+                    (vars->vals
                      (function-pattern->args (first %) fun-name)
                      state))))
 
@@ -162,7 +164,7 @@
                   (range-function-pattern fun-name)
                   #(apply
                     (get range-function-map fun-name)
-                    (args->vals
+                    (vars->vals
                      (range-str->var-list
                       ; because we get a range-str back,
                       ; we dont use function-pattern->args
@@ -183,9 +185,7 @@
 ;; FORMULA EVALUATION
 ;; -------------------------
 
-(defn replace-vars [s state]
-  (string/replace s var-pattern
-                  #(:value ((keyword %) state))))
+(defn replace-vars [s state] (string/replace s var-pattern #(var->val % state)))
 
 (defn replace-functions [fml state]
   (-> fml

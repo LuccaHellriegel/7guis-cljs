@@ -6,15 +6,17 @@ Know a more idiomatic way to solve something? Be sure to open an issue and let m
 
 Below I have detailed some design decisions, alternatives, limitations and the main features. Besides that I have taken care to comment many decisions in the code.
 
-The current implementation is as far as I can tell bug-free and fullfills the 7GUIs spec.
+The current implementation is as far as I can tell bug-free and fulfills the 7GUIs spec.
 Generally, I have kept as close to the 7GUIs spec in terms of layout and functionality as made sense.
 In some tasks I have included test data to make testing the features easier. The data can be removed by searching "Test-Data" and removing the corresponding code-block.
 
-# Task 1: Counter
+# Tasks
+
+## Task 1: Counter
 
 Its a counter. What does it do? I counts <s>blue</s> things.
 
-# Task 2: Temperature Converter
+## Task 2: Temperature Converter
 
 Converts Fahrenheit to Celsius and back.
 
@@ -22,7 +24,7 @@ The required bidirectionality is trivial with atoms. My version only supports US
 
 I have used two atoms for simplicity but usage of cursors or just referencing one "state"-atom would be possible as well.
 
-# Task 3: Flight Booker
+## Task 3: Flight Booker
 
 Allows you to choose flights with or without return and book them.
 
@@ -32,19 +34,19 @@ A possible improvement would be a debounce to wait until the user has typed to c
 
 My favorite part of the solution is the reg-ex that I use to check the date and also extract the numbers for comparison. The usage of capturing groups makes the comparison trivial.
 
-# Task 4: Timer
+## Task 4: Timer
 
 Observe the timer and a gauge of the passed time, determine the maximum duration of the timer with the slider.
 
 The interesting thing about this task is that you should be able to restart the timer if you increase the maximum duration with the slider. I implemented this by comparing the elapsed time and the maximum duration and using the result as a prop. This could probably be implemented via a Reagent-Reaction too. For simplicity reasons I have used two atoms (my rule of thumb was to use one "state"-atom once I would have needed three single atoms otherwise).
 
-# Task 5: CRUD
+## Task 5: CRUD
 
 The mother of all business applications. Create, read, update, delete or filter the names in the "database".
 
 Two implementation details are interesting here: the spec does not say anything about duplicates or empty names. Empty names are allowed in this implementation. I have also allowed duplicates and added a time-stamp on creation to differentiate them. Because Reagent uses "=" for comparison the re-render would have problems otherwise. Also, (de-)selection, deletion and update would not work as expected if there was no difference between duplicate names.
 
-# Task 6: Circle Drawer
+## Task 6: Circle Drawer
 
 Draw circles or select existing ones with left-click. A right click on a selected circle opens a pop-up where you can change the diameter of the selected circle. The undo/redo buttons do what you would expect: undo/redo circle creations and diameter change.
 
@@ -55,7 +57,7 @@ Because I wanted to just have one circle-vector, I included a type for the circl
 
 A possible improvement would be to keep the selected circle separate from the others. Right now the selected circle is always the last one in the vector, which allows the drawing process described above to only draw the selected version of the circle. Depending on the direction of the development, singling out the selected circle or using just a single vector are valid trade-offs.
 
-# Task 7: Cells
+## Task 7: Cells
 
 The "Hello World" for functional programming and GUI enthusiasts: Excel-Light.
 Enter and evaluate formulas, propagate changes to all dependant cells.
@@ -66,6 +68,8 @@ For the data structure, I have chosen a simple map where each cell contains the 
 
 A possible improvement is to differentiate the ways in which the formula is wrong and display that to the user and also propagate the error somewhat (e.g. until we start cycling) so the user better knows which cells are affected.
 In general, the possibilities for extension are endless (just look at Google Table and its autocomplete features etc.) and are out of scope of the 7GUIs tasks.
+
+# Developer instructions
 
 ### Development mode
 
