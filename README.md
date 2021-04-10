@@ -64,10 +64,10 @@ Enter and evaluate formulas, propagate changes to all dependant cells.
 
 To keep the project dependency-free, I have implemented my own evaluation function for formulas and haven't used a parser library. The evaluation function (if the formula is valid) just evluates and replaces all formula-functions (e.g. add(A0,A1)) in the formula and - once the formula is just made up of math operations and numbers - hands it to the js/eval function (this should be safe - except for eval-exploits that work with only numbers, math and brackets). Most number-formulas are valid JavaScript code (except e.g. power-operations). Alternatively, I could have parsed the formula completely to Clojure-code. This task is underspecified in respect to what formulas need to be supported exactly, so the js/eval-implementation is a reasonable approach.
 
-For the data structure, I have chosen a simple map where each cell contains the attributes value/ formula and dependencies. The change propagation is then just iterating over all cells and checking if the changed cell is part of the dependencies and re-calculating if it is the case. To make sure we do not get stuck in cycles, we perform a depth-first search on the data structure - which is basically a directed graph - and do not propagate if we find a cycle or if the formula is invalid in other ways.
+For the data structure, I have chosen a simple map where each cell contains the attributes value / formula and dependencies. The change propagation is then just iterating over all cells and checking if the changed cell is part of the dependencies and re-calculating if it is the case. To make sure we do not get stuck in cycles, we perform a depth-first search on the data structure - which is basically a directed graph - and do not propagate if we find a cycle or if the formula is invalid in other ways.
 
 A possible improvement is to differentiate the ways in which the formula is wrong and display that to the user and also propagate the error somewhat (e.g. until we start cycling) so the user better knows which cells are affected.
-In general, the possibilities for extension are endless (just look at Google Table and its autocomplete features etc.) and are out of scope of the 7GUIs tasks.
+In general, the possibilities for extension are endless (just look at Google Table and its autocomplete features etc.).
 
 # Developer instructions
 
