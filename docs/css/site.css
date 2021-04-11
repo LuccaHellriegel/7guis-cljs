@@ -40,6 +40,12 @@ a:hover {
 	justify-content: flex-start;
 }
 
+.flex-row-end {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+}
+
 .flex-column-start {
 	display: flex;
 	flex-direction: column;
@@ -47,11 +53,12 @@ a:hover {
 }
 
 @media screen and (max-width: 500px) {
-	.topnav {
+	.to-column {
 		flex-direction: column;
+		justify-content: flex-start;
 	}
 }
 
 .bigger-font {
-	font-size: 2em;
+	font-size: 1.5em;
 }

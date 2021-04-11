@@ -34,7 +34,7 @@
 (defn event->target-value [e]
   (-> e .-target .-value))
 
-(def field-style {:font-size "2em" :margin "4px"})
+(def field-style {:font-size "1.5em" :margin "4px"})
 
 (defn flight-type-select []
   (let [flight-type (r/cursor state [:flight-type])]

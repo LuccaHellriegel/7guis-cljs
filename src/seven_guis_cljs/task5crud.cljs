@@ -54,12 +54,12 @@
 (defn prefix-field []
   (let [prefix-cursor (r/cursor state [:prefix])]
     (fn []
-      [:input {:style {:font-size "1em"} :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
+      [:input {:style {:font-size "0.75em"} :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
 
 (defn name-field []
   (let [name-cursor (r/cursor state [:name])]
     (fn []
-      [:input {:style {:font-size "1em"}
+      [:input {:style {:font-size "0.75em"}
                :type "text"
                :value @name-cursor
                :on-change #(reset! name-cursor (event->target-value %))}])))
@@ -67,15 +67,18 @@
 (defn surname-field []
   (let [surname-cursor (r/cursor state [:surname])]
     (fn []
-      [:input {:style {:font-size "1em"}
+      [:input {:style {:font-size "0.75em"}
                :type "text"
                :value @surname-cursor
                :on-change #(reset! surname-cursor (event->target-value %))}])))
 
 (defn fields []
-  [:div {:style {:display "flex" :flex-direction "column"  :align-items "flex-end"}}
-   [:div "Name: " [name-field]]
-   [:div "Surname: "  [surname-field]]])
+  [:div {:class "flex-column-start"}
+   [:div {:class "flex-row-end to-column"}
+    [:div  "Name:" [name-field]]]
+   [:br]
+   [:div {:class "flex-row-end to-column"}
+    [:div  "Surname:"]  [surname-field]]])
 
 (defn full-name-list-entry [full-name]
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
@@ -119,6 +122,7 @@
 
 (defn create-button []
   [:button {:class "bigger-font"
+            :style {:margin "4px"}
             :on-click add-cur-full-name-to-crud-db} "Create"])
 
 ; cant find anything about "" / empty updates in the spec, so we will allow it
@@ -126,6 +130,7 @@
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
     (fn []
       [:button {:class "bigger-font"
+                :style {:margin "4px"}
                 :on-click replace-selected-full-name-in-crud-db
                 :disabled (not @selected-full-name-cursor)} "Update"])))
 
@@ -133,26 +138,24 @@
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
     (fn []
       [:button {:class "bigger-font"
+                :style {:margin "4px"}
                 :on-click #(do
                              (remove-selected-full-name-from-crud-db)
                              (reset! selected-full-name-cursor nil))
                 :disabled (not @selected-full-name-cursor)} "Delete"])))
 
 (defn buttons []
-  [:div {:class "flex-row-start" :style {:margin "4px"}}
-   [:div
-    [create-button]]
-   [:div {:style {:margin "0px 50px"}}
-    [update-button]]
-   [:div
-    [delete-button]]])
+  [:div {:class "flex-row-start" :style {:flex-wrap "wrap" :margin "4px" :justify-content "space-around" :max-width "70vh"}}
+   [create-button]
+   [update-button]
+   [delete-button]])
 
 (defn crud-gui []
   [:div
    {:class "flex-column-start"}
    [:div {:class "flex-row-start"
-          :style {:margin "0px 0px 2px" :font-size "2em" :align-items "center"}}
-    [:div "Filter prefix: "] [prefix-field]]
-   [:div {:class "flex-row-start" :style {:font-size "2em"}}
-    [full-name-list] [:div {:style {:margin "0px 3px"}} [fields]]]
+          :style {:flex-wrap "wrap" :margin "4px" :font-size "1.5em" :align-items "center"}}
+    [:div "Filter prefix:"] [prefix-field]]
+   [:div {:class "flex-row-start" :style {:flex-wrap "wrap" :font-size "1.5em" :margin "4px" :align-items "flex-start"}}
+    [full-name-list] [fields]]
    [buttons]])

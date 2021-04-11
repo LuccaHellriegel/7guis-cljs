@@ -4,14 +4,15 @@
 (def click-count (r/atom 0))
 
 (defn counter-field []
-  [:input {:style {:font-size "4em"}
+  [:input {:class "bigger-font"
+           :style {:max-width "15ch"}
            :type "text"
            :value @click-count
            :read-only true}])
 
 (defn count-button []
   [:input
-   {:style {:font-size "2em"}
+   {:class "bigger-font"
     :type "button"
     :value "Count"
     :on-click

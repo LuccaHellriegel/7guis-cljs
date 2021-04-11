@@ -51,11 +51,6 @@
    {:style {:border-radius "25px" :border "2px solid" :padding "14px 16px" :margin "4px" :text-align "center"}}
    "7GUIs by Lucca Hellriegel"])
 
-
-
-(defn heading [text]
-  [:h3 [:u [:b text]]])
-
 (def task-heading-style {:text-align "center"
                          :display "flex"
                          :justify-content "center"
@@ -93,7 +88,7 @@
        text])))
 
 (defn nav []
-  [:div {:class "topnav flex-row-start"
+  [:div {:class "to-column flex-row-start"
          :style {:width "100%" :background-color "#79aea3"}}
    [signature]
    (doall (map (fn [c] ^{:key (first c)} [task-heading (first c)]) content-vec))])
@@ -102,7 +97,7 @@
   (let [v (some #(when (= (first %) @active-task) %) content-vec)]
     [:div {:style {:border "2px solid white" :background-color "white" :margin "10px"}}
      [(second v)]
-     (when (= (count v) 3) [:div {:style {:margin "2px"}} (nth v 2)])]))
+     (when (= (count v) 3) [:div {:style {:margin "4px"}} (nth v 2)])]))
 
 (defn home-page []
   [:div {:style {:display "flex" :flex-direction "column" :justify-content "center" :width "100%"}}
