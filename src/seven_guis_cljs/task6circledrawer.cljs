@@ -176,6 +176,13 @@
                        prevent
                        (conj prevent (:id circle)))))))))))
 
+(defn handle-modal-opening [modal-cursor present-cursor event]
+  (when (not @modal-cursor) (let [clicked-circle (click-in-circle? @present-cursor (event->canvas-mouse-pos event))]
+                              (when (= :select (:type clicked-circle))
+                                (.preventDefault event)
+                                (swap! state assoc :modal true)
+                                true))))
+
 (defn circle-canvas []
   (let [present-cursor (get-present-cursor)
         modal-cursor (get-modal-cursor)]
@@ -185,11 +192,14 @@
                 ; this shouldnt be in the style-map because then it doesnt affect the bitmap
                 :width (let [w js/document.documentElement.clientWidth] (if (< w 500) "250px" "400px")) :height "300px"
                 :id canvas-id
-                :on-context-menu
-                #(when (not @modal-cursor) (let [clicked-circle (click-in-circle? @present-cursor (event->canvas-mouse-pos %))]
-                                             (when (= :select (:type clicked-circle))
-                                               (.preventDefault %)
-                                               (swap! state assoc :modal true))))
+                ; the spec only defines right-click, but that doesnt work on mobile!
+                :on-double-click #(when (handle-modal-opening modal-cursor present-cursor %)
+                                    ; the double-click selects the modal-text, so we remove the selection
+                                    ; this doesnt work 100%, so I added user-select: none; to the text 
+                                    ; (we still remove the selection of the "Close"-text)
+                                    (r/after-render (fn [] (let [selection (.getSelection js/document)]
+                                                             (when selection (.empty selection))))))
+                :on-context-menu #(handle-modal-opening modal-cursor present-cursor %)
                 :on-click
                 #(when (not @modal-cursor) (let [present @present-cursor
                                                  clicked-circle (click-in-circle? present (event->canvas-mouse-pos %))]
@@ -223,7 +233,7 @@
                                                     (remove-select present)
                                                     (assoc (last present) :radius (event->target-value %))))}])
 (defn diameter-text [present]
-  [:div {:style {:margin "6px" :font-size "1.5em"}} "Adjust diameter of circle at (" (:x (last present)) "," (:y (last present)) ")."])
+  [:div {:style {:margin "6px" :font-size "1.5em" :user-select "none"}} "Adjust diameter of circle at (" (:x (last present)) "," (:y (last present)) ")."])
 
 (defn diameter-modal []
   (let [modal-cursor (get-modal-cursor)
