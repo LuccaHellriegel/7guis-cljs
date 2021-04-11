@@ -45,11 +45,7 @@ My favorite part of the solution is the reg-ex that I use to check the date and 
 
 ### <u>**Description:**</u>
 
-Observe the timer and a gauge of the passed time, determine the maximum duration of the timer with the slider.
-
-### <u>**Implementation:**</u>
-
-The interesting thing about this task is that you should be able to restart the timer if you increase the maximum duration with the slider. I implemented this by comparing the elapsed time and the maximum duration and using the result as a prop. This could probably be implemented via a Reagent-Reaction too. For simplicity reasons I have used two atoms (my rule of thumb was to use one "state"-atom once I would have needed three single atoms otherwise).
+Observe the timer and a gauge of the passed time, determine the maximum duration of the timer with the slider. The timer can be restarted by increasing the maximum duration.
 
 ## Task 5: CRUD
 
