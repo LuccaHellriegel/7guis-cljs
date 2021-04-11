@@ -59,8 +59,8 @@
 (defn temp-converter-gui []
   [:div {:class "flex-column-start" :style {:width "30%"}}
    [:div {:class "flex-row-start" :style {:padding "10px" :flex-wrap "wrap" :margin "2px" :justify-content "space-between" :width "100%" :align-items "center"}}
-    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "2em" :margin "4px"}} "Celsius:"]
+    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "1.5em" :margin "4px"}} "Celsius:"]
     [celsius-field]]
    [:div {:class "flex-row-start" :style {:padding "10px" :flex-wrap "wrap" :margin "2px" :justify-content "space-between" :width "100%" :align-items "center"}}
-    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "2em" :margin "4px"}} "Fahrenheit:"]
+    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "1.5em" :margin "4px"}} "Fahrenheit:"]
     [fahrenheit-field]]])
