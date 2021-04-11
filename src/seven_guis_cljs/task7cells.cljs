@@ -23,13 +23,16 @@
 (defn gen-key []
   (gensym "key-"))
 
+(defn vec-contains? [v i]
+  (some #(= % i) v))
+
 ;; -------------------------
 ;; DATA
 ;; -------------------------
 
 ; inspired by Google Table
 ; is used if we evaluate a cell with value = nil
-(def cell-default-value 0)
+(def default-cell-value 0)
 
 (def default-cell-state {:value nil :formula "" :dependencies []})
 
@@ -46,7 +49,7 @@
                                  (range 0 100)]
                                  [(keyword (str c n)) default-cell-state])))
 
-(def state (r/atom default-cells-state))
+(def state-atom (r/atom {:cells default-cells-state :active-id nil}))
 
 ; Test-Data
 (def test-state {:A0 {:dependencies [] :formula "1" :value 1}
@@ -54,15 +57,23 @@
                  :A2 {:dependencies [] :formula "2" :value 2}
                  :B0 {:dependencies [:A0 :A1 :A2 :A3 :A4] :formula "=sum(A0:A4)+1*2 / (2) + add(A0,A1) - mul(A1,A0) -1" :value 6}
                  :B1 {:dependencies [:B0] :formula "=B0+1" :value 7}})
-(swap! state merge test-state)
+(swap! state-atom assoc :cells (merge (:cells @state-atom) test-state))
 
+(defn get-cells-state [atom]
+  (:cells @atom))
 
-(defn vec-contains? [v i]
-  (some #(= % i) v))
+(defn get-cell-state-cursor [atom id]
+  (r/cursor atom [:cells id]))
 
-(defn find-dependants [state state-keys id]
-  (filter #(vec-contains? (:dependencies (% state)) id)
-          state-keys))
+(defn get-active-id-cursor []
+  (r/cursor state-atom [:active-id]))
+
+(defn swap-cell-value [atom id new-val]
+  (swap! atom assoc-in [:cells id :value] new-val))
+
+(defn find-dependants [cells-state cells-state-keys id]
+  (filter #(vec-contains? (:dependencies (% cells-state)) id)
+          cells-state-keys))
 
 ;; -------------------------
 ;; FORMULA PARSING PATTERNS
@@ -88,16 +99,16 @@
 ;; FORMULA VARIABLE / FUNCTION ARGUMENT PARSING
 ;; -------------------------
 
-(defn var->val [var state]
+(defn var->val [var cells-state]
   (if (str-float? var)
     (js/parseFloat var)
           ; var-case
     (let [val (:value
-               ((keyword var) state))]
-      (if val val cell-default-value))))
+               ((keyword var) cells-state))]
+      (if val val default-cell-value))))
 
-(defn vars->vals [vars state]
-  (map #(var->val % state) vars))
+(defn vars->vals [vars cells-state]
+  (map #(var->val % cells-state) vars))
 
 (defn arg-fun-str->arg-str [s fun-name]
   (subs s
@@ -144,22 +155,22 @@
                          "prod" *})
 (def range-function-names (keys range-function-map))
 
-(defn replace-arg-function [s fun-name state]
+(defn replace-arg-function [s fun-name cells-state]
   (string/replace s
                   (arg-function-pattern fun-name)
                   #(apply
                     (get arg-function-map fun-name)
                     (vars->vals
                      (function-pattern->args (first %) fun-name)
-                     state))))
+                     cells-state))))
 
-(defn replace-arg-functions [s state]
+(defn replace-arg-functions [s cells-state]
   (reduce
-   #(replace-arg-function %1 %2 state)
+   #(replace-arg-function %1 %2 cells-state)
    s
    arg-function-names))
 
-(defn replace-range-function [s fun-name state]
+(defn replace-range-function [s fun-name cells-state]
   (string/replace s
                   (range-function-pattern fun-name)
                   #(apply
@@ -173,11 +184,11 @@
                        ; we get a seq as input
                        (first %)
                        fun-name))
-                     state))))
+                     cells-state))))
 
-(defn replace-range-functions [s state]
+(defn replace-range-functions [s cells-state]
   (reduce
-   #(replace-range-function %1 %2 state)
+   #(replace-range-function %1 %2 cells-state)
    s
    range-function-names))
 
@@ -185,23 +196,22 @@
 ;; FORMULA EVALUATION
 ;; -------------------------
 
-(defn replace-vars [s state] (string/replace s var-pattern #(var->val % state)))
+(defn replace-vars [s cells-state] (string/replace s var-pattern #(var->val % cells-state)))
 
-(defn replace-functions [fml state]
+(defn replace-functions [fml cells-state]
   (-> fml
-      (#(replace-range-functions % state))
-      (#(replace-arg-functions % state))))
+      (#(replace-range-functions % cells-state))
+      (#(replace-arg-functions % cells-state))))
 
 (def js-formula-pattern #"[0-9+-/*\(\) ]+")
 
-(defn eval-formula [fml state-atom]
-  (let [state @state-atom
-        s (replace-functions fml state)]
+(defn eval-formula [fml cells-state]
+  (let [s (replace-functions fml cells-state)]
     (loop [last-s fml
            cur-s s]
       ; we recur until there is no more changes
       (if (= last-s cur-s)
-        (let [js-formula (replace-vars cur-s state)]
+        (let [js-formula (replace-vars cur-s cells-state)]
           ; if at the end it is roughly a js-formula we try to eval it        
           (when (re-matches js-formula-pattern js-formula)
             (try
@@ -211,7 +221,7 @@
               (catch :default e
                 nil))))
         (recur cur-s
-               (replace-functions cur-s state))))))
+               (replace-functions cur-s cells-state))))))
 
 ;; -------------------------
 ;; CYCLE DETECTION
@@ -251,10 +261,11 @@
 
 (defn formula-str->val [state-atom formula vars id]
   (cond
+    (empty? formula) default-cell-value
     (formula-self-ref? formula id) nil
     (str-float? formula) (js/parseFloat formula)
-    (not (cycle-free? @state-atom vars id)) nil
-    (formula? formula) (eval-formula (subs formula 1) state-atom)
+    (not (cycle-free? (get-cells-state state-atom) vars id)) nil
+    (formula? formula) (eval-formula (subs formula 1) (get-cells-state state-atom))
     :else nil))
 
 ;; -------------------------
@@ -264,18 +275,18 @@
 ; alternatively we could optimize the propagation by ordering the dependants according to their dependants
 ; I assume that by starting with the dependant with the least dependants, 
 ; we could avoid some calculations
-(defn propagate-change [state-atom state-keys id]
-  (let [state @state-atom
-        dependants (find-dependants state state-keys id)]
+(defn propagate-change [state-atom cells-state-keys id]
+  (let [cells-state (get-cells-state state-atom)
+        dependants (find-dependants cells-state cells-state-keys id)]
     (doseq [d dependants]
       (prn
-       (let [formula (:formula (d state))
+       (let [formula (:formula (d cells-state))
              new-val (formula-str->val state-atom formula (formula->vars formula) d)]
          (if new-val
            (do
-             (swap! state-atom assoc-in [d :value] new-val)
-             (propagate-change state-atom state-keys d))
-           (swap! state-atom assoc-in [d :value] nil)))))))
+             (swap-cell-value state-atom d new-val)
+             (propagate-change state-atom cells-state-keys d))
+           (swap-cell-value state-atom d nil)))))))
 
 ;; -------------------------
 ;; FORMULA CELL
@@ -290,24 +301,28 @@
          #(assoc % :value new-value)))
 
 (defn eval-cell [cell-cursor id]
-  (let [formula (:formula @cell-cursor)
+  (let [old-val (:value @cell-cursor)
+        formula (:formula @cell-cursor)
         vars (formula->vars formula)]
     ; save new dependencies in any case, update could make the formula valid
     (swap! cell-cursor #(assoc % :dependencies (vec vars)))
-    (let [new-val (formula-str->val state formula vars id)]
-      (if new-val
-        (do
-          (set-cell-value cell-cursor new-val)
-          (propagate-change state (keys @state) id))
-        ; we do not propagate wrong inputs
-        ; alternatively we could propagate them, 
-        ; but then we would need to stop before it cycles        
-        (reset-cell-value cell-cursor)))))
+    (let [new-val (formula-str->val state-atom formula vars id)]
+      (when (not (= old-val new-val))
+        (if new-val
+          (do
+            (set-cell-value cell-cursor new-val)
+            (propagate-change state-atom (keys (get-cells-state state-atom)) id))
+          ; we do not propagate wrong inputs
+          ; alternatively we could propagate them, 
+          ; but then we would need to stop before it cycles        
+          (reset-cell-value cell-cursor))))))
 
 (defn invalid-cell-state? [disabled cell-state]
   ; the state is invalid if we are not editing (disabled = false)
   ; but the value is still nil and a formula has been entered
-  ; this means the formula was evaluated and was invalid
+  ; this means the formula was evaluated and was invalid 
+  ; (except when typing in the editor-component, in future iterations there needs to be a 
+  ;  connection between the two components beyond active-id)
   (and
    disabled
    (not (:value cell-state))
@@ -320,22 +335,30 @@
   (swap! cell-cursor #(assoc % :formula fml)))
 
 (defn cell-display-value [cell-state disabled?]
-  (let [value (:value cell-state)]
+  (let [value (:value cell-state)
+        formula (:formula cell-state)]
     ; we want to show the formula always if we are editing: disabled = false    
-    (if (and disabled? value)
+    (if (and disabled? value (seq formula))
       value
       (:formula cell-state))))
 
-(defn has-formula? [cell-cursor]
-  (seq (:formula @cell-cursor)))
+(defn change-cell-formula [cell-cursor event]
+  (let [new-formula (event->target-value event)]
+    (if
+     (= "" new-formula)
+      (reset-cell-state cell-cursor)
+      (set-cell-formula cell-cursor new-formula))))
 
 (defn cell [id]
-  (let [cell-cursor (r/cursor state [id])
+  (let [html-id (str "7gui-cells-" id)
+        cell-cursor (get-cell-state-cursor state-atom id)
+        active-id (get-active-id-cursor)
         disabled (r/atom true)
         disable #(reset! disabled true)
         enable #(reset! disabled false)]
     (fn []
-      [:input {:type "text"
+      [:input {:id html-id
+               :type "text"
                :style {:font-size "1em"
                        :border "1px groove" :min-width "120px" :min-height "30px" :padding "1px 2px"
                        :background-color (when
@@ -343,50 +366,80 @@
                                            "indianred")}
                :read-only @disabled
                :value (cell-display-value @cell-cursor @disabled)
-               :on-blur #(when (and
-                                ; its only already disabled if we fire blur via on-key-press
-                                (not @disabled)
-                                (has-formula? cell-cursor))
+               ; its only already disabled if we fire blur via on-key-press
+               :on-blur #(when (not @disabled)
                            (disable)
                            (eval-cell cell-cursor id))
-               :on-change #(let [new-val (event->target-value %)]
-                             (if
-                              (= "" new-val)
-                               (reset-cell-state cell-cursor)
-                               (set-cell-formula cell-cursor new-val)))
+               :on-change #(change-cell-formula cell-cursor %)
                :on-key-press
-               #(when (= (.-key %) "Enter")
-                  (disable)
-                  (.blur (.-target %))
-                  (when (has-formula? cell-cursor)
-                    (eval-cell cell-cursor id)))
+               #(let [k (.-key %)]
+                  (if @disabled
+                    ; inspired by Google Table, if you just start typing, it should work
+                    ; the only reason I enable via double-click is the 7GUIs spec                    
+                    (when (and
+                           (re-matches #"(\w|=)" k)
+                           (not (.-altKey %))
+                           (not (.-ctrlKey %)))
+                      (enable)
+                      (set-cell-formula cell-cursor k)
+                      ; need to move the cursor to the end, otherwise when typing the cursor is at the start of the key
+                      (r/after-render (fn []
+                                        (let [element (.getElementById js/document html-id)]
+                                          (.setSelectionRange element 1 1)))))
+                    (when (= k "Enter")
+                      (disable)
+                      (.blur (.-target %))
+                      (eval-cell cell-cursor id))))
+               :on-click #(reset! active-id id)
                :on-double-click enable}])))
 
 ;; -------------------------
 ;; TABLE
 ;; -------------------------
 
-(defn header-cell [content]
+(defn editor []
+  (let [active-id (get-active-id-cursor)]
+    (fn []
+      (let [id @active-id
+            cell-cursor (get-cell-state-cursor state-atom id)]
+        [:div {:style {:width "100%" :padding (if id "2px" "4px") :border "2px solid" :background-color (when (not id) "grey")}}
+         (if id [:div {:class "flex-row-start"
+                       :style {:align-items "center" :flex-wrap "wrap"}}
+                 [:b {:style {:border "2px solid lightblue" :width "5ch" :text-align "center"}} id "="]
+                 [:input {:value (:formula @cell-cursor)
+                          :on-change #(change-cell-formula cell-cursor %)
+                          :on-blur #(eval-cell cell-cursor id)
+                          :on-key-press #(when (= (.-key %) "Enter")
+                                           (.blur (.-target %))
+                                           (eval-cell cell-cursor id))
+                          :type "text" :style {:width "100%" :font-size "1em"}}]]
+             "Double-click a cell or type in it to edit it!")]))))
+
+(defn column-cell [content]
   [:div {:style {:font-size "1em" :min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px solid"}} content])
+
+(defn row-cell [content]
+  [:div {:style {:font-size "1em" :min-width "2ch" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px solid" :text-align "end"}} content])
 
 (defn top-row []
   [:div {:class "flex-row-start"}
    (conj
     (for [c columns]
-      ^{:key (gen-key)} [header-cell c])
-    ^{:key (gen-key)} [header-cell ""])])
+      ^{:key (gen-key)} [column-cell c])
+    ^{:key (gen-key)} [row-cell ""])])
 
 (defn row [r]
   [:div {:class "flex-row-start"}
    (conj
     (for [c columns]
       ^{:key (gen-key)} [cell (keyword (str c r))])
-    ^{:key (gen-key)}  [header-cell (str r)])])
+    ^{:key (gen-key)}  [row-cell (str r)])])
 
 (defn cells-gui []
   [:div
    {:class "flex-column-start"
     :style {:max-height "600px" :outline "3px solid" :overflow "scroll"}}
+   [editor]
    (conj
     (for [r rows]
       ^{:key (gen-key)} [row r])

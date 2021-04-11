@@ -33,7 +33,7 @@
                      [:li "IMPORTANT: the included example content contains formulas in B0 and B1, so if something doesn't work as expected, check those."]
                      [:li "Basics:"
                       [:ul
-                       [:li "Double-click: edit cell-content."]
+                       [:li "Double-click or single-click + typing: edit cell-content."]
                        [:li "Click away / press enter: evaluate cell-formula / -content."]
                        [:li "Formulas start with \"=\" and fundamentally work like you would expect from e.g. Google Table."]
                        [:li "If the cell is red, either it contains a wrong formula or is part of a cyclic dependency."]]]
