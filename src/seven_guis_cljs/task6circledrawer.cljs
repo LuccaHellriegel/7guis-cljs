@@ -183,7 +183,7 @@
       (circle-drawer @present-cursor)
       [:canvas {:style {:border "3px solid"}
                 ; this shouldnt be in the style-map because then it doesnt affect the bitmap
-                :width "330px" :height "300px"
+                :width (let [w js/document.documentElement.clientWidth] (if (< w 500) "250px" "400px")) :height "300px"
                 :id canvas-id
                 :on-context-menu
                 #(when (not @modal-cursor) (let [clicked-circle (click-in-circle? @present-cursor (event->canvas-mouse-pos %))]

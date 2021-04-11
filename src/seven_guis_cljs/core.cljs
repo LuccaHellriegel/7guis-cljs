@@ -89,7 +89,7 @@
 
 (defn nav []
   [:div {:class "to-column flex-row-start"
-         :style {:width "100%" :background-color "#79aea3"}}
+         :style {:width "100vw" :background-color "#79aea3" :flex-wrap "wrap"}}
    [signature]
    (doall (map (fn [c] ^{:key (first c)} [task-heading (first c)]) content-vec))])
 

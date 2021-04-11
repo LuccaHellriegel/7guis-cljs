@@ -13,6 +13,7 @@
 (defn count-button []
   [:input
    {:class "bigger-font"
+    :style {:min-width "6ch"}
     :type "button"
     :value "Count"
     :on-click
