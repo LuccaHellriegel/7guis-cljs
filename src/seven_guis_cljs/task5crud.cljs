@@ -49,17 +49,15 @@
 ;; COMPONENTS
 ;; -------------------------
 
-; I am resisting the urge to abstract here
-; in a real project I would assume that these buttons get more specialised in the future
 (defn prefix-field []
   (let [prefix-cursor (r/cursor state [:prefix])]
     (fn []
-      [:input {:style {:font-size "0.75em"} :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
+      [:input {:class "input-field" :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
 
 (defn name-field []
   (let [name-cursor (r/cursor state [:name])]
     (fn []
-      [:input {:style {:font-size "0.75em"}
+      [:input {:class "input-field"
                :type "text"
                :value @name-cursor
                :on-change #(reset! name-cursor (event->target-value %))}])))
@@ -67,17 +65,16 @@
 (defn surname-field []
   (let [surname-cursor (r/cursor state [:surname])]
     (fn []
-      [:input {:style {:font-size "0.75em"}
+      [:input {:class "input-field"
                :type "text"
                :value @surname-cursor
                :on-change #(reset! surname-cursor (event->target-value %))}])))
 
 (defn fields []
-  [:div {:class "flex-column-start"}
-   [:div {:class "flex-row-end to-column"}
+  [:div {:class "crud-fields"}
+   [:div {:class "crud-field mobile-flex-column-start"}
     [:div  "Name:" [name-field]]]
-   [:br]
-   [:div {:class "flex-row-end to-column"}
+   [:div {:class "crud-field mobile-flex-column-start"}
     [:div  "Surname:"]  [surname-field]]])
 
 (defn full-name-list-entry [full-name]
@@ -86,9 +83,9 @@
       [:div {:on-click #(if (= @selected-full-name-cursor full-name)
                           (reset! selected-full-name-cursor nil)
                           (reset! selected-full-name-cursor full-name))
-             :style (if (= @selected-full-name-cursor full-name)
-                      {:background-color "lightblue" :color "white" :padding "7px" :margin "2px"}
-                      {:padding "7px" :margin "2px"})}
+             :class (if (= @selected-full-name-cursor full-name)
+                      "list-entry list-entry-active"
+                      "list-entry")}
        (:surname full-name) ", " (:name full-name)])))
 
 (defn surname-starts-with-prefix [full-name prefix]
@@ -100,8 +97,7 @@
         prefix-cursor (r/cursor state [:prefix])]
     (fn []
       [:div
-       {:class "flex-column-start"
-        :style {:border "1px solid"}}
+       {:class "list-entries"}
        (doall
         (for [full-name
               ; assuming "filter" in the spec has the same interpretation as in Clojure 
@@ -121,31 +117,28 @@
           ^{:key (gen-key)} [full-name-list-entry full-name]))])))
 
 (defn create-button []
-  [:button {:class "bigger-font"
-            :style {:margin "4px"}
+  [:button {:class "crud-button"
             :on-click add-cur-full-name-to-crud-db} "Create"])
 
 ; cant find anything about "" / empty updates in the spec, so we will allow it
 (defn update-button []
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
     (fn []
-      [:button {:class "bigger-font"
-                :style {:margin "4px"}
+      [:button {:class "crud-button"
                 :on-click replace-selected-full-name-in-crud-db
                 :disabled (not @selected-full-name-cursor)} "Update"])))
 
 (defn delete-button []
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
     (fn []
-      [:button {:class "bigger-font"
-                :style {:margin "4px"}
+      [:button {:class "crud-button"
                 :on-click #(do
                              (remove-selected-full-name-from-crud-db)
                              (reset! selected-full-name-cursor nil))
                 :disabled (not @selected-full-name-cursor)} "Delete"])))
 
 (defn buttons []
-  [:div {:class "flex-row-start" :style {:flex-wrap "wrap" :margin "4px" :justify-content "space-around" :max-width "70vh"}}
+  [:div {:class "crud-button-container"}
    [create-button]
    [update-button]
    [delete-button]])
@@ -153,9 +146,8 @@
 (defn crud-gui []
   [:div
    {:class "flex-column-start"}
-   [:div {:class "flex-row-start"
-          :style {:flex-wrap "wrap" :margin "4px" :font-size "1.5em" :align-items "center"}}
+   [:div {:class "crud-row"}
     [:div "Filter prefix:"] [prefix-field]]
-   [:div {:class "flex-row-start" :style {:flex-wrap "wrap" :font-size "1.5em" :margin "4px" :align-items "flex-start"}}
+   [:div {:class "crud-row"}
     [full-name-list] [fields]]
    [buttons]])

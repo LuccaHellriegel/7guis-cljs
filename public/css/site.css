@@ -1,11 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
+
 body {
-	font-family: "Helvetica Neue", Verdana, Helvetica, Arial, sans-serif;
+	font-family: "Inter", sans-serif;
 	margin: 0 auto;
 	-webkit-font-smoothing: antialiased;
 	font-size: 1.125em;
 	color: #333;
 	line-height: 1.5em;
-	background-color: #434371;
+	background-color: #475c7a;
 }
 
 h1,
@@ -52,18 +54,429 @@ a:hover {
 	justify-content: flex-start;
 }
 
-@media screen and (max-width: 500px) {
-	.to-column {
+.bigger-font {
+	font-size: 1.5em;
+}
+
+/* Main page */
+
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+}
+
+.cells-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.content {
+	border: 2px solid white;
+	background-color: white;
+	margin: 10px;
+}
+
+.content-desc {
+	margin: 4px;
+}
+
+.nav {
+	width: 100vw;
+	background-color: #fcbb6d;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+.nav-signature {
+	border-radius: 25px;
+	border: 2px solid #475c7a;
+	background-color: #475c7a;
+	padding: 14px 16px;
+	margin: 4px;
+	text-align: center;
+	/* color: #475c7a; */
+	color: #d8737f;
+}
+
+.nav-items {
+	justify-content: center;
+}
+
+.nav-item {
+	cursor: pointer;
+	display: flex;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	text-decoration: none;
+	font-size: 17px;
+	margin: 4px 2px 4px;
+	border-radius: 25px;
+	border: 2px solid;
+	color: #685d79;
+}
+
+.nav-item-active {
+	color: black;
+	background-color: #475c7a;
+}
+
+.nav-item:hover {
+	background-color: #ddd;
+	color: black;
+}
+
+/* Task 1: Counter */
+
+.counter-field {
+	font-size: 1.5em;
+	max-width: 15ch;
+}
+
+.counter-button {
+	font-size: 1.5em;
+	min-width: 6ch;
+	text-align: center;
+}
+
+.counter-gui {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+/* Task 2: Temp Converter */
+
+.temperature-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	margin: 2px;
+	justify-content: space-between;
+	width: 100%;
+	align-items: center;
+}
+
+.temperature-text {
+	font-size: 1.5em;
+	margin: 4px;
+	text-align: center;
+}
+
+.temperature-field {
+	font-size: 1.5em;
+	margin: 2px;
+}
+
+.temp-converter-gui {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+/* Task 3: Flight Booker */
+
+.flight-select {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.date-field {
+	font-size: 1.5em;
+	margin: 1px;
+}
+
+.date-field-wrong {
+	background-color: indianred;
+}
+
+.date-field-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	margin: 4px;
+}
+
+.book-button {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.book-message {
+	background-color: lightblue;
+	border-radius: 30px;
+	border: 2px solid;
+	padding: 12px;
+	font-size: 1.2em;
+	margin: 10px;
+}
+
+.flight-booker-gui {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+/* Task 4: Timer */
+
+.time-gauge {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.time-number {
+	font-size: 1.5em;
+	margin: 4px;
+	border: 2px solid;
+	padding: 4px;
+	width: 6ch;
+}
+
+.time-slider-container {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.time-slider {
+	min-width: 10%;
+}
+
+.reset-button {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.timer-gui {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+/* Task 5: CRUD */
+
+.input-field {
+	font-size: 0.75em;
+}
+
+.list-entry {
+	padding: 7px;
+	margin: 2px;
+}
+
+.list-entry-active {
+	background-color: lightblue;
+	color: white;
+}
+
+.list-entries {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	border: 1px solid;
+}
+
+.crud-button {
+	font-size: 1.5em;
+	margin: 4px;
+}
+
+.crud-button-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	margin: 4px;
+	justify-content: space-around;
+}
+
+.crud-fields {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.crud-field {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+.crud-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	flex-wrap: wrap;
+	margin: 4px;
+	font-size: 1.5em;
+	align-items: center;
+}
+
+/* Task 6: Circle Drawer */
+
+.diameter-modal {
+	margin: 10px;
+	padding: 14px;
+	border: 5px solid;
+	display: none;
+	flex-direction: column;
+	justify-content: space-between;
+	max-width: 300px;
+	min-height: 100px;
+	opacity: 1;
+	background-color: lightblue;
+	color: black;
+	font-size: 15;
+}
+
+.diameter-modal-active {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.diameter-modal-text {
+	margin: 6px;
+	font-size: 1.2em;
+	user-select: none;
+}
+
+.diameter-modal-slider {
+	margin: 2px;
+	font-size: 1.5em;
+}
+
+.diameter-modal-button {
+	font-size: 1.5em;
+}
+
+.circle-drawer-buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin: 4px;
+}
+
+.circle-drawer-button {
+	margin: 2px;
+	font-size: 1.5em;
+}
+
+.circle-canvas {
+	border: 3px solid;
+}
+
+.circle-drawer-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.circle-drawer-gui {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Task 7: Cells */
+
+.cells-editor-container {
+	width: 100%;
+	margin-top: 6px;
+	margin-bottom: 9px;
+}
+
+.cells-editor-content {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-around;
+	flex-wrap: wrap;
+}
+
+.cells-editor-id {
+	background-color: lightgrey;
+	width: 5ch;
+	text-align: center;
+}
+
+.cells-editor-formula {
+	font-size: 1em;
+	width: 94vw;
+}
+
+.column-cell {
+	font-size: 1em;
+	max-width: 120px;
+	min-width: 120px;
+	max-height: 30px;
+	min-height: 30px;
+	padding: 1px 2px;
+	background-color: #685d79;
+	border: 1px solid black;
+	color: black;
+}
+
+.row-cell {
+	font-size: 1em;
+	min-width: 2ch;
+	max-width: 2ch;
+	min-height: 30px;
+	max-height: 30px;
+	padding: 1px 2px;
+	background-color: #685d79;
+	border: 1px solid black;
+	text-align: end;
+	color: black;
+}
+
+.formula-cell {
+	font-size: 1em;
+	border: 1px groove;
+	width: 120px;
+	height: 30px;
+	padding: 1px 2px;
+}
+
+.formula-cell-wrong {
+	background-color: indianred;
+}
+
+.cells-row {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+}
+
+.rows {
+	outline: 3px solid;
+	overflow: scroll;
+	max-height: 600px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+.cells-gui {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+}
+
+/* */
+
+@media screen and (max-width: 645px) {
+	.mobile-flex-column-start {
+		display: flex;
 		flex-direction: column;
 		justify-content: flex-start;
 	}
-}
-
-input {
-	overflow: hidden;
-	max-width: 80vw;
-}
-
-.bigger-font {
-	font-size: 1.5em;
 }

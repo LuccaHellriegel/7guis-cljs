@@ -10,8 +10,6 @@
    [seven-guis-cljs.task7cells :as task7cells]
    [reagent.core :as r]))
 
-(def active-task (r/atom "Task 1: Counter"))
-
 (def content-vec [["Task 1: Counter" task1counter/counter-gui]
                   ["Task 2: Temperature Converter" task2tempconverter/temp-converter-gui]
                   ["Task 3: Flight Booker" task3flightbooker/flight-booker-gui]
@@ -46,61 +44,31 @@
                         [:li "Accept lists (e.g. \"A0,A1,A2\"): add, sub, div, mul, mod."]
                         [:li "Accept ranges (e.g. \"A0:A2\"): sum, prod."]]]]]]]])
 
-(defn signature []
-  [:h3
-   {:style {:border-radius "25px" :border "2px solid" :padding "14px 16px" :margin "4px" :text-align "center"}}
-   "7GUIs by Lucca Hellriegel"])
+(defn signature [] [:h3 {:class "nav-signature"} "7GUIs by Lucca Hellriegel"])
 
-(def task-heading-style {:text-align "center"
-                         :display "flex"
-                         :justify-content "center"
-                         :align-items "center"
-                         :padding "10px"
-                         :text-decoration "none"
-                         :font-size "17px"
-                         :margin "4px 2px 4px"
-                         :border-radius "25px"
-                         :border "2px solid white"
-                         :color "#f2f2f2"})
-
-(def task-heading-active-style  (assoc task-heading-style
-                                       :background-color "#ffffff"
-                                       :color "black"))
-
-(def task-heading-hover-style (assoc task-heading-style
-                                     :background-color "#ddd"
-                                     :color "black"
-                                     :text-decoration "underline"))
+(def active-task (r/atom "Task 1: Counter"))
 
 (defn task-heading [text]
-  (let [style (r/atom task-heading-style)]
-    (fn []
-      [:div {:on-click #(reset! active-task text)
-             ; you can solve this via :hover in css too, 
-             ; but I am in a Reagent-groove now so here we are
-             :on-mouse-enter #(reset! style task-heading-hover-style)
-             :on-mouse-leave #(reset! style task-heading-style)
-             :style (if
-                     (and (not (= task-heading-hover-style @style))
-                          (= text @active-task))
-                      task-heading-active-style
-                      @style)}
-       text])))
+  [:div {:on-click #(reset! active-task text)
+         :class (if (= text @active-task) "nav-item nav-item-active" "nav-item")}
+   text])
 
 (defn nav []
-  [:div {:class "to-column flex-row-start"
-         :style {:width "100vw" :background-color "#79aea3" :flex-wrap "wrap"}}
+  [:div {:class "mobile-flex-column-start flex-row-start nav"}
    [signature]
-   (doall (map (fn [c] ^{:key (first c)} [task-heading (first c)]) content-vec))])
+   [:div {:class "mobile-flex-column-start flex-row-start nav-items"}
+    (doall (map (fn [c] ^{:key (first c)} [task-heading (first c)]) content-vec))]])
 
 (defn content []
   (let [v (some #(when (= (first %) @active-task) %) content-vec)]
-    [:div {:style {:border "2px solid white" :background-color "white" :margin "10px"}}
+    [:div {:class "content"}
      [(second v)]
-     (when (= (count v) 3) [:div {:style {:margin "4px"}} (nth v 2)])]))
+     (when (= (count v) 3) [:div {:class "content-desc"} (nth v 2)])]))
 
 (defn home-page []
-  [:div {:style {:display "flex" :flex-direction "column" :justify-content "center" :width "100%"}}
+  [:div {:class
+         ; this is a hack, because overflow and align-items: center dont like each other
+         (if (= "Task 7: Cells" @active-task) "cells-container" "container")}
    [nav]
    [content]])
 

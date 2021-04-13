@@ -130,7 +130,7 @@
 (defn undo-button [modal-cursor]
   (let [present (get-present-cursor)]
     (fn []
-      [:button {:class "bigger-font"
+      [:button {:class "circle-drawer-button"
                 :on-click undo
                 :disabled (or
                            @modal-cursor
@@ -140,7 +140,7 @@
 (defn redo-button [modal-cursor]
   (let [future (r/cursor state [:future])]
     (fn []
-      [:button {:class "bigger-font"
+      [:button {:class "circle-drawer-button"
                 :on-click redo
                 :disabled (or
                            @modal-cursor
@@ -149,13 +149,11 @@
 
 (defn buttons []
   (let [modal (get-modal-cursor)]
-    [:div {:class "flex-row-start" :style {:margin "4px"}}
-     [:div {:style {:margin "0px 4px 0px 0px"}}
-      [undo-button
-       modal]]
-     [:div
-      [redo-button
-       modal]]]))
+    [:div {:class "circle-drawer-buttons"}
+     [undo-button
+      modal]
+     [redo-button
+      modal]]))
 
 (defn circle-drawer [circles]
   (r/after-render
@@ -188,7 +186,7 @@
         modal-cursor (get-modal-cursor)]
     (fn []
       (circle-drawer @present-cursor)
-      [:canvas {:style {:border "3px solid"}
+      [:canvas {:class "circle-canvas"
                 ; this shouldnt be in the style-map because then it doesnt affect the bitmap
                 :width (let [w js/document.documentElement.clientWidth] (if (< w 500) "250px" "400px")) :height "300px"
                 :id canvas-id
@@ -216,7 +214,7 @@
                                                       :future []))))}])))
 
 (defn close-modal-button [present]
-  [:button {:style {:font-size "1.5em"}
+  [:button {:class "diameter-modal-button"
             :on-click #(let [orig-circle (find-circle-with-changed-radius present)]
                          (swap! state assoc
                                 :modal false
@@ -227,37 +225,26 @@
    "Close"])
 
 (defn diameter-slider [present]
-  [:input {:style {:margin "2px" :font-size "1.5em"}
+  [:input {:class "diameter-modal-slider"
            :type "range" :value (:radius (last present)) :min 1 :max 100 :step 1
            :on-change #(swap! state assoc :present (conj
                                                     (remove-select present)
                                                     (assoc (last present) :radius (event->target-value %))))}])
 (defn diameter-text [present]
-  [:div {:style {:margin "6px" :font-size "1.5em" :user-select "none"}} "Adjust diameter of circle at (" (:x (last present)) "," (:y (last present)) ")."])
+  [:div {:class "diameter-modal-text"} "Adjust diameter of circle at (" (:x (last present)) "," (:y (last present)) ")."])
 
 (defn diameter-modal []
   (let [modal-cursor (get-modal-cursor)
         present-cursor (get-present-cursor)]
     (fn []
-      [:div {:style {:margin "50px"
-                     :padding "14px"
-                     :border "5px solid"
-                     :display (if @modal-cursor "flex" "none")
-                     :flex-direction "column"
-                     :justify-content "space-between"
-                     :max-width "300px"
-                     :min-height "100px"
-                     :opacity 1
-                     :background-color "lightblue"
-                     :text-color "black"
-                     :font-size 15}}
+      [:div {:class (if @modal-cursor "diameter-modal diameter-modal-active" "diameter-modal")}
        (when @modal-cursor [diameter-text @present-cursor])
        (when @modal-cursor  [diameter-slider @present-cursor])
        (when @modal-cursor [close-modal-button @present-cursor])])))
 
 (defn circle-drawer-gui []
-  [:div
+  [:div {:class "circle-drawer-gui"}
    [buttons]
-   [:div {:class "flex-row-start"}
+   [:div {:class "circle-drawer-content"}
     [circle-canvas]
     [diameter-modal]]])

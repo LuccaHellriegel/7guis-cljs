@@ -359,11 +359,7 @@
     (fn []
       [:input {:id html-id
                :type "text"
-               :style {:font-size "1em"
-                       :border "1px groove" :min-width "120px" :min-height "30px" :padding "1px 2px"
-                       :background-color (when
-                                          (invalid-cell-state? @disabled @cell-cursor)
-                                           "indianred")}
+               :class (if (invalid-cell-state? @disabled @cell-cursor) "formula-cell formula-cell-wrong" "formula-cell")
                :read-only @disabled
                :value (cell-display-value @cell-cursor @disabled)
                ; its only already disabled if we fire blur via on-key-press
@@ -402,34 +398,34 @@
     (fn []
       (let [id @active-id
             cell-cursor (get-cell-state-cursor state-atom id)]
-        [:div {:style {:width "100%" :padding (if id "2px" "4px") :border "2px solid" :background-color (when (not id) "grey")}}
-         (if id [:div {:class "flex-row-start"
-                       :style {:align-items "center" :flex-wrap "wrap"}}
-                 [:b {:style {:border "2px solid lightblue" :width "5ch" :text-align "center"}} id "="]
+        [:div {:class (if id "cells-editor-container cells-editor-container-active" "cells-editor-container")}
+         (if id [:div {:class "cells-editor-content"}
+                 [:b {:class "cells-editor-id"} id "="]
                  [:input {:value (:formula @cell-cursor)
                           :on-change #(change-cell-formula cell-cursor %)
                           :on-blur #(eval-cell cell-cursor id)
                           :on-key-press #(when (= (.-key %) "Enter")
                                            (.blur (.-target %))
                                            (eval-cell cell-cursor id))
-                          :type "text" :style {:width "100%" :font-size "1em"}}]]
-             "Double-click a cell or type in it to edit it!")]))))
+                          :type "text"
+                          :class "cells-editor-formula"}]]
+             [:b "Double-click a cell or type in it to edit it!"])]))))
 
 (defn column-cell [content]
-  [:div {:style {:font-size "1em" :min-width "120px" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px solid"}} content])
+  [:div {:class "column-cell"} content])
 
 (defn row-cell [content]
-  [:div {:style {:font-size "1em" :min-width "2ch" :min-height "30px" :padding "1px 2px" :background-color "lightblue" :border "1px solid" :text-align "end"}} content])
+  [:div {:class "row-cell"} content])
 
 (defn top-row []
-  [:div {:class "flex-row-start"}
+  [:div {:class "cells-row"}
    (conj
     (for [c columns]
       ^{:key (gen-key)} [column-cell c])
     ^{:key (gen-key)} [row-cell ""])])
 
 (defn row [r]
-  [:div {:class "flex-row-start"}
+  [:div {:class "cells-row"}
    (conj
     (for [c columns]
       ^{:key (gen-key)} [cell (keyword (str c r))])
@@ -437,10 +433,9 @@
 
 (defn cells-gui []
   [:div
-   {:class "flex-column-start"
-    :style {:max-height "600px" :outline "3px solid" :overflow "scroll"}}
+   {:class "cells-gui"}
    [editor]
-   (conj
-    (for [r rows]
-      ^{:key (gen-key)} [row r])
-    ^{:key (gen-key)} [top-row])])
+   [:div {:class "rows"} (conj
+                          (for [r rows]
+                            ^{:key (gen-key)} [row r])
+                          ^{:key (gen-key)} [top-row])]])

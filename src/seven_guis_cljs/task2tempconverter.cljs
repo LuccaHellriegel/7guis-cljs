@@ -29,8 +29,7 @@
 (defn celsius-field []
   [:div
    [:input
-    {:class "bigger-font"
-     :style {:margin "2px"}
+    {:class "temperature-field"
      :type "text"
      :value @celsius-value
      :on-change #(-> %
@@ -48,8 +47,7 @@
 (defn fahrenheit-field []
   [:div
    [:input
-    {:class "bigger-font"
-     :style {:margin "2px"}
+    {:class "temperature-field"
      :type "text"
      :value @fahrenheit-value
      :on-change #(-> %
@@ -57,10 +55,10 @@
                      change-fahrenheit)}]])
 
 (defn temp-converter-gui []
-  [:div {:class "flex-column-start" :style {:width "30%"}}
-   [:div {:class "flex-row-start" :style {:padding "10px" :flex-wrap "wrap" :margin "2px" :justify-content "space-between" :width "100%" :align-items "center"}}
-    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "1.5em" :margin "4px"}} "Celsius:"]
+  [:div {:class "temp-converter-gui"}
+   [:div {:class "temperature-container"}
+    [:div {:class "temperature-text"} "Celsius:"]
     [celsius-field]]
-   [:div {:class "flex-row-start" :style {:padding "10px" :flex-wrap "wrap" :margin "2px" :justify-content "space-between" :width "100%" :align-items "center"}}
-    [:div {:style {:padding "7px" :border-radius "25px" :border "2px solid" :font-size "1.5em" :margin "4px"}} "Fahrenheit:"]
+   [:div {:class "temperature-container"}
+    [:div {:class "temperature-text"} "Fahrenheit:"]
     [fahrenheit-field]]])

@@ -12,7 +12,7 @@
   (r/cursor state [:elapsed-time]))
 
 (defn elapsed-time-gauge []
-  [:div {:style {:font-size "1.5em" :margin "4px"}}
+  [:div {:class "time-gauge"}
    "Elapsed Time: "
    [:meter {:value (:elapsed-time @state) :min 0 :max (:duration @state) :step 0.1}]])
 
@@ -29,26 +29,26 @@
                             (when (< (:elapsed-time @state) (:duration @state))
                               (swap! state assoc :elapsed-time (inc-zero-point-one (:elapsed-time @state)))))
                        100)))
-      [:div {:style {:font-size "1.5em" :margin "4px" :border "2px solid" :padding "4px" :width "6ch"}}
+      [:div {:class "time-number"}
        (str @elapsed-time "s")])))
 
 (defn duration-slider []
   (let [duration (r/cursor state [:duration])]
     (fn []
-      [:div {:style {:font-size "1.5em" :margin "4px"}}
+      [:div {:class "time-slider-container"}
        "Duration: "
-       [:input {:style {:min-width "10%"}
+       [:input {:class "time-slider"
                 :type "range" :value @duration :min 0 :max (:duration default-state) :step 0.1
                 :on-change #(reset! duration (event->target-value %))}]])))
 
 (defn reset-button []
   (let [elapsed-time (get-elapsed-time-cursor)]
     (fn []
-      [:button {:style {:font-size "1.5em" :margin "4px" :max-width "50vh"}
+      [:button {:class "reset-button"
                 :on-click #(reset! elapsed-time 0)} "Reset"])))
 
 (defn timer-gui []
-  [:div {:class "flex-column-start"}
+  [:div {:class "timer-gui"}
    [elapsed-time-gauge]
    [elapsed-time-numerical]
    [duration-slider]

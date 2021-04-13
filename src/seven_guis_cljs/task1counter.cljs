@@ -4,22 +4,20 @@
 (def click-count (r/atom 0))
 
 (defn counter-field []
-  [:input {:class "bigger-font"
-           :style {:max-width "15ch"}
+  [:input {:class "counter-field"
            :type "text"
            :value @click-count
            :read-only true}])
 
-(defn count-button []
+(defn counter-button []
   [:input
-   {:class "bigger-font"
-    :style {:min-width "6ch" :text-align "center"}
+   {:class "counter-button"
     :type "button"
     :value "Count"
     :on-click
     #(swap! click-count inc)}])
 
 (defn counter-gui []
-  [:div {:class "flex-row-start"}
-   [count-button]
+  [:div {:class "counter-gui"}
+   [counter-button]
    [counter-field]])
