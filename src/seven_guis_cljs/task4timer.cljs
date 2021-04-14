@@ -13,8 +13,9 @@
 
 (defn elapsed-time-gauge []
   [:div {:class "time-gauge"}
-   "Elapsed Time: "
-   [:meter {:value (:elapsed-time @state) :min 0 :max (:duration @state) :step 0.1}]])
+   [:div {:class "time-gauge-text"} "Elapsed Time"]
+   [:meter {:class "time-gauge-meter"
+            :value (:elapsed-time @state) :min 0 :max (:duration @state) :step 0.1}]])
 
 (defn inc-zero-point-one [n]
   (/ (+ (* 10 n) 1) 10))
@@ -36,7 +37,7 @@
   (let [duration (r/cursor state [:duration])]
     (fn []
       [:div {:class "time-slider-container"}
-       "Duration: "
+       "Duration"
        [:input {:class "time-slider"
                 :type "range" :value @duration :min 0 :max (:duration default-state) :step 0.1
                 :on-change #(reset! duration (event->target-value %))}]])))
@@ -48,7 +49,7 @@
                 :on-click #(reset! elapsed-time 0)} "Reset"])))
 
 (defn timer-gui []
-  [:div {:class "timer-gui"}
+  [:div {:class "timer-gui mobile-timer-gui"}
    [elapsed-time-gauge]
    [elapsed-time-numerical]
    [duration-slider]

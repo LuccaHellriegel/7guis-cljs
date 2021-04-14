@@ -87,24 +87,27 @@ a:hover {
 
 .nav {
 	width: 100vw;
-	background-color: #fcbb6d;
+	background-color: #d8737f;
 	flex-wrap: wrap;
 	justify-content: space-around;
+	border-bottom: 5px solid lightgray;
+	border-top: 5px solid lightgray;
 }
 
 .nav-signature {
-	border-radius: 25px;
-	border: 2px solid #475c7a;
+	border-radius: 22px;
+	border: 1px solid lightgray;
 	background-color: #475c7a;
 	padding: 14px 16px;
 	margin: 4px;
 	text-align: center;
-	/* color: #475c7a; */
 	color: #d8737f;
 }
 
 .nav-items {
 	justify-content: center;
+	margin-top: 4px;
+	margin-bottom: 4px;
 }
 
 .nav-item {
@@ -117,18 +120,15 @@ a:hover {
 	text-decoration: none;
 	font-size: 17px;
 	margin: 4px 2px 4px;
-	border-radius: 25px;
-	border: 2px solid;
-	color: #685d79;
 }
 
 .nav-item-active {
-	color: black;
+	color: white;
 	background-color: #475c7a;
 }
 
 .nav-item:hover {
-	background-color: #ddd;
+	background-color: lightgray;
 	color: black;
 }
 
@@ -136,19 +136,23 @@ a:hover {
 
 .counter-field {
 	font-size: 1.5em;
-	max-width: 15ch;
+	max-width: 12ch;
+	margin: 2px;
+	text-align: center;
 }
 
 .counter-button {
 	font-size: 1.5em;
 	min-width: 6ch;
 	text-align: center;
+	margin: 2px;
 }
 
 .counter-gui {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-start;
+	flex-wrap: wrap;
 }
 
 /* Task 2: Temp Converter */
@@ -158,27 +162,33 @@ a:hover {
 	flex-direction: row;
 	justify-content: flex-start;
 	flex-wrap: wrap;
-	margin: 2px;
+	margin: 10px;
+	padding: 4px;
 	justify-content: space-between;
 	width: 100%;
 	align-items: center;
+	border: 1px solid lightgray;
+	background-color: lightgray;
 }
 
 .temperature-text {
 	font-size: 1.5em;
-	margin: 4px;
-	text-align: center;
+	text-align: start;
+	width: 7ch;
 }
 
 .temperature-field {
 	font-size: 1.5em;
-	margin: 2px;
+	padding: 2px;
+	max-width: 10ch;
 }
 
 .temp-converter-gui {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
+	align-items: center;
+	padding: 6px;
 }
 
 /* Task 3: Flight Booker */
@@ -210,9 +220,8 @@ a:hover {
 }
 
 .book-message {
-	background-color: lightblue;
 	border-radius: 30px;
-	border: 2px solid;
+	border: 5px solid lightgray;
 	padding: 12px;
 	font-size: 1.2em;
 	margin: 10px;
@@ -227,25 +236,47 @@ a:hover {
 /* Task 4: Timer */
 
 .time-gauge {
+	border: 1px solid lightgray;
+	padding: 1px;
 	font-size: 1.5em;
 	margin: 4px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.time-gauge-text {
+	margin: 2px;
+}
+
+.time-gauge-meter {
+	margin: 1px;
+	width: 100%;
 }
 
 .time-number {
 	font-size: 1.5em;
 	margin: 4px;
-	border: 2px solid;
+	border: 2px solid lightgray;
 	padding: 4px;
-	width: 6ch;
+	width: 4ch;
+	background-color: lightgray;
+	text-align: center;
 }
 
 .time-slider-container {
+	border: 1px solid lightgray;
+	padding: 1px;
 	font-size: 1.5em;
 	margin: 4px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
 }
 
 .time-slider {
-	min-width: 10%;
+	margin: 1px;
+	width: 100%;
 }
 
 .reset-button {
@@ -257,6 +288,13 @@ a:hover {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
+	min-width: 35vw;
+	/* max-width: 70vw; */
+}
+@media screen and (max-width: 500px) {
+	.mobile-timer-gui {
+		min-width: 80vw;
+	}
 }
 
 /* Task 5: CRUD */
@@ -267,11 +305,14 @@ a:hover {
 
 .list-entry {
 	padding: 7px;
-	margin: 2px;
+}
+
+.list-entry:hover {
+	cursor: pointer;
 }
 
 .list-entry-active {
-	background-color: lightblue;
+	background-color: #475c7a;
 	color: white;
 }
 
@@ -280,10 +321,11 @@ a:hover {
 	flex-direction: column;
 	justify-content: flex-start;
 	border: 1px solid;
+	margin: 4px;
 }
 
 .crud-button {
-	font-size: 1.5em;
+	font-size: 1.32em;
 	margin: 4px;
 }
 
@@ -292,32 +334,53 @@ a:hover {
 	flex-direction: row;
 	justify-content: flex-start;
 	flex-wrap: wrap;
-	margin: 4px;
-	justify-content: space-around;
+	margin-top: 4px;
+	margin-bottom: 4px;
 }
 
 .crud-fields {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	align-items: flex-start;
+	margin: 4px;
+}
+
+.crud-field-text {
+	width: 7.5ch;
 }
 
 .crud-field {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-end;
-	margin-top: 4px;
 	margin-bottom: 4px;
 }
 
-.crud-row {
+.crud-filter-prefix {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-start;
+	align-items: flex-start;
 	flex-wrap: wrap;
-	margin: 4px;
 	font-size: 1.5em;
-	align-items: center;
+}
+
+.crud-filter-prefix-text {
+	margin: 4px;
+}
+
+.crud-filter-prefix-field {
+	margin: 4px;
+}
+
+.crud-main-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: flex-start;
+	flex-wrap: wrap;
+	font-size: 1.5em;
 }
 
 /* Task 6: Circle Drawer */
@@ -391,10 +454,7 @@ a:hover {
 .cells-editor-container {
 	width: 100%;
 	margin-top: 6px;
-	margin-bottom: 9px;
-}
-
-.cells-editor-content {
+	margin-bottom: 6px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -415,35 +475,43 @@ a:hover {
 
 .column-cell {
 	font-size: 1em;
-	max-width: 120px;
 	min-width: 120px;
-	max-height: 30px;
 	min-height: 30px;
 	padding: 1px 2px;
-	background-color: #685d79;
+	background-color: #475c7a;
 	border: 1px solid black;
-	color: black;
+	outline: 1px solid black;
+	z-index: 0;
+	color: lightgray;
 }
 
 .row-cell {
 	font-size: 1em;
 	min-width: 2ch;
-	max-width: 2ch;
 	min-height: 30px;
-	max-height: 30px;
 	padding: 1px 2px;
-	background-color: #685d79;
+	background-color: #475c7a;
 	border: 1px solid black;
+	outline: 1px solid black;
+	z-index: 0;
+	color: lightgray;
 	text-align: end;
-	color: black;
 }
 
 .formula-cell {
 	font-size: 1em;
-	border: 1px groove;
-	width: 120px;
-	height: 30px;
+	border: 1px solid lightgray;
+	min-width: 120px;
+	min-height: 30px;
 	padding: 1px 2px;
+}
+
+.formula-cell:focus {
+	padding: 0px 1px;
+	border-width: 2px;
+	border-style: inset;
+	border-color: -internal-light-dark(rgb(118, 118, 118), rgb(133, 133, 133));
+	border-image: initial;
 }
 
 .formula-cell-wrong {
@@ -457,7 +525,7 @@ a:hover {
 }
 
 .rows {
-	outline: 3px solid;
+	border: 3px solid black;
 	overflow: scroll;
 	max-height: 600px;
 	display: flex;

@@ -52,7 +52,7 @@
 (defn prefix-field []
   (let [prefix-cursor (r/cursor state [:prefix])]
     (fn []
-      [:input {:class "input-field" :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
+      [:input {:class "input-field crud-filter-prefix-field" :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
 
 (defn name-field []
   (let [name-cursor (r/cursor state [:name])]
@@ -73,9 +73,9 @@
 (defn fields []
   [:div {:class "crud-fields"}
    [:div {:class "crud-field mobile-flex-column-start"}
-    [:div  "Name:" [name-field]]]
+    [:div {:class "crud-field-text"} "Name:"] [name-field]]
    [:div {:class "crud-field mobile-flex-column-start"}
-    [:div  "Surname:"]  [surname-field]]])
+    [:div {:class "crud-field-text"} "Surname:"]  [surname-field]]])
 
 (defn full-name-list-entry [full-name]
   (let [selected-full-name-cursor (r/cursor state [:selected-full-name])]
@@ -146,8 +146,8 @@
 (defn crud-gui []
   [:div
    {:class "flex-column-start"}
-   [:div {:class "crud-row"}
-    [:div "Filter prefix:"] [prefix-field]]
-   [:div {:class "crud-row"}
+   [:div {:class "crud-filter-prefix"}
+    [:div {:class "crud-filter-prefix-text"} "Filter prefix:"] [prefix-field]]
+   [:div {:class "crud-main-row"}
     [full-name-list] [fields]]
    [buttons]])

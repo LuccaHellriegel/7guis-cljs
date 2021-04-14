@@ -85,7 +85,7 @@
     (.beginPath ctx)
     (.arc ctx (:x circle) (:y circle) (:radius circle) 0 (* 2 js/Math.PI) false)
     (when (= (:type circle) :select)
-      (set! (.-fillStyle ctx) "grey")
+      (set! (.-fillStyle ctx) "#475c7a")
       (.fill ctx))
     (set! (.-lineWidth ctx) 1)
     (.stroke ctx)))

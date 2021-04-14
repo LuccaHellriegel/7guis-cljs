@@ -49,7 +49,7 @@
                                  (range 0 100)]
                                  [(keyword (str c n)) default-cell-state])))
 
-(def state-atom (r/atom {:cells default-cells-state :active-id nil}))
+(def state-atom (r/atom {:cells default-cells-state :active-id :A0}))
 
 ; Test-Data
 (def test-state {:A0 {:dependencies [] :formula "1" :value 1}
@@ -398,18 +398,16 @@
     (fn []
       (let [id @active-id
             cell-cursor (get-cell-state-cursor state-atom id)]
-        [:div {:class (if id "cells-editor-container cells-editor-container-active" "cells-editor-container")}
-         (if id [:div {:class "cells-editor-content"}
-                 [:b {:class "cells-editor-id"} id "="]
-                 [:input {:value (:formula @cell-cursor)
-                          :on-change #(change-cell-formula cell-cursor %)
-                          :on-blur #(eval-cell cell-cursor id)
-                          :on-key-press #(when (= (.-key %) "Enter")
-                                           (.blur (.-target %))
-                                           (eval-cell cell-cursor id))
-                          :type "text"
-                          :class "cells-editor-formula"}]]
-             [:b "Double-click a cell or type in it to edit it!"])]))))
+        [:div {:class "cells-editor-container"}
+         [:b {:class "cells-editor-id"} id]
+         [:input {:value (:formula @cell-cursor)
+                  :on-change #(change-cell-formula cell-cursor %)
+                  :on-blur #(eval-cell cell-cursor id)
+                  :on-key-press #(when (= (.-key %) "Enter")
+                                   (.blur (.-target %))
+                                   (eval-cell cell-cursor id))
+                  :type "text"
+                  :class "cells-editor-formula"}]]))))
 
 (defn column-cell [content]
   [:div {:class "column-cell"} content])
