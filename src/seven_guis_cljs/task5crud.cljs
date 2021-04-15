@@ -23,10 +23,16 @@
                     :surname ""})
 (def state (r/atom default-state))
 
+(defn get-name-cursor []
+  (r/cursor state [:name]))
+
+(defn get-surname-cursor []
+  (r/cursor state [:surname]))
+
 ; Test-Data
 (def me {:surname "Nachname" :name "Vorname" :time 10})
 (def you {:surname "Highly" :name "Specific" :time 10})
-(reset! state (assoc @state :crud-db [me you] :selected-full-name me))
+(reset! state (assoc @state :crud-db [me you] :selected-full-name me :name (:name me) :surname (:surname me)))
 
 (defn get-cur-full-name [state]
   {:name (:name state) :surname (:surname state) :time (js/Date.now)})
@@ -55,7 +61,7 @@
       [:input {:class "input-field crud-filter-prefix-field" :type "text" :on-change #(reset! prefix-cursor (event->target-value %))}])))
 
 (defn name-field []
-  (let [name-cursor (r/cursor state [:name])]
+  (let [name-cursor (get-name-cursor)]
     (fn []
       [:input {:class "input-field"
                :type "text"
@@ -63,7 +69,7 @@
                :on-change #(reset! name-cursor (event->target-value %))}])))
 
 (defn surname-field []
-  (let [surname-cursor (r/cursor state [:surname])]
+  (let [surname-cursor (get-surname-cursor)]
     (fn []
       [:input {:class "input-field"
                :type "text"

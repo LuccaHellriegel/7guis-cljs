@@ -55,8 +55,8 @@
 (def test-state {:A0 {:dependencies [] :formula "1" :value 1}
                  :A1 {:dependencies [] :formula "2" :value 2}
                  :A2 {:dependencies [] :formula "2" :value 2}
-                 :B0 {:dependencies [:A0 :A1 :A2 :A3 :A4] :formula "=sum(A0:A4)+1*2 / (2) + add(A0,A1) - mul(A1,A0) -1" :value 6}
-                 :B1 {:dependencies [:B0] :formula "=B0+1" :value 7}})
+                 :B0 {:dependencies [:A0 :A1 :A2 :A3 :A4] :formula "=sum(A0:A4)+1*2 / (2) + mul(A1,A0) -1" :value 7}
+                 :B1 {:dependencies [:B0] :formula "=B0+1" :value 8}})
 (swap! state-atom assoc :cells (merge (:cells @state-atom) test-state))
 
 (defn get-cells-state [atom]

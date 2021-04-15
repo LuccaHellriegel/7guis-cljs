@@ -90,13 +90,13 @@ a:hover {
 	background-color: #d8737f;
 	flex-wrap: wrap;
 	justify-content: space-around;
-	border-bottom: 5px solid lightgray;
-	border-top: 5px solid lightgray;
+	border-bottom: 5.5px solid lightgray;
+	border-top: 5.5px solid lightgray;
 }
 
 .nav-signature {
 	border-radius: 22px;
-	border: 1px solid lightgray;
+	border: 1.5px solid lightgray;
 	background-color: #475c7a;
 	padding: 14px 16px;
 	margin: 4px;
@@ -108,6 +108,7 @@ a:hover {
 	justify-content: center;
 	margin-top: 4px;
 	margin-bottom: 4px;
+	user-select: none;
 }
 
 .nav-item {
@@ -305,6 +306,7 @@ a:hover {
 
 .list-entry {
 	padding: 7px;
+	user-select: none;
 }
 
 .list-entry:hover {
@@ -322,6 +324,8 @@ a:hover {
 	justify-content: flex-start;
 	border: 1px solid;
 	margin: 4px;
+	min-width: 20vw;
+	min-height: 5vh;
 }
 
 .crud-button {
